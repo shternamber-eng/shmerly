@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SCHMEARLY: кликабельный прототип сайта</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&display=swap">
+<style>
+:root{--green:#25372D;--cream:#F5EBDD;--rye:#33251F;--dark:#1F1512;--pist:#B7C49A;--tom:#D44D3E;--line:rgba(37,55,45,.22)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--cream);color:var(--green);font-family:'Archivo','Helvetica Neue',Arial,sans-serif;font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Anton','Impact',sans-serif;font-weight:400;text-transform:uppercase;line-height:.95;margin:0;letter-spacing:.005em}
+h2{font-size:clamp(44px,7vw,96px)}
+h3{font-size:30px}
+p{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{max-width:1320px;margin:0 auto;padding:0 clamp(18px,4.5vw,64px)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:14px 26px;border-radius:10px;border:2.5px solid var(--green);background:var(--green);color:var(--cream);font-weight:700;font-size:16px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;transition:transform .15s,background .2s,color .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--green)}
+.btn.light{background:var(--cream);color:var(--green);border-color:var(--cream)}
+.btn.ghost.light{background:transparent;color:var(--cream)}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+.btn.added{background:var(--tom);border-color:var(--tom);color:var(--dark)}
+.eyebrow{font-size:14px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.ph{display:inline-block;border:1.5px dashed currentColor;padding:2px 8px;font-size:13px;letter-spacing:.04em}
+:focus-visible{outline:3px solid var(--tom);outline-offset:3px}
+
+/* header */
+header.top{position:sticky;top:0;z-index:30;background:var(--cream);border-bottom:2px solid var(--green)}
+.top .row{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:76px}
+.logo{display:flex;align-items:center;gap:2px;text-decoration:none;font-family:'Anton','Impact',sans-serif;font-size:38px;line-height:1}
+.logo svg{width:31px;height:41px}
+nav.main{display:flex;gap:30px;font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase}
+nav.main a{text-decoration:none;padding:12px 0;border-bottom:3px solid transparent}
+nav.main a:hover,nav.main a.on{border-color:var(--tom)}
+.top .right{display:flex;gap:8px}
+.icon{width:48px;height:48px;border-radius:10px;border:2.5px solid var(--green);background:transparent;display:none;align-items:center;justify-content:center;padding:0}
+.cartbtn{min-height:48px;padding:10px 18px;white-space:nowrap}
+@media(max-width:480px){.logo{font-size:30px}.logo svg{width:24px;height:32px}.cartbtn{padding:10px 12px;font-size:14px}}
+.cartbtn.bump{animation:bump .4s}
+@keyframes bump{40%{transform:scale(1.14) rotate(-3deg)}}
+@media(max-width:900px){nav.main{display:none;position:absolute;left:0;right:0;top:100%;background:var(--cream);border-bottom:2px solid var(--green);flex-direction:column;gap:0;padding:8px clamp(18px,4.5vw,64px) 16px}nav.main.open{display:flex}nav.main a{padding:14px 0;font-size:18px}.icon{display:flex}}
+
+/* views */
+#app{min-height:70vh}
+.view{animation:fade .35s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}}
+section{padding:clamp(56px,8vw,112px) 0;scroll-margin-top:78px}
+
+/* hero */
+.hero{padding:clamp(28px,4vw,56px) 0 0}
+.hero .grid{display:grid;grid-template-columns:1.25fr 1fr;gap:40px;align-items:center}
+.hero h1{font-size:clamp(52px,8.6vw,132px);white-space:nowrap}
+.hero h1 span{display:block;animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+.hero h1 span:nth-child(2){animation-delay:.12s}
+.hero h1 span:nth-child(3){animation-delay:.24s;color:var(--tom)}
+@keyframes rise{from{opacity:0;transform:translateY(40px)}}
+.hero .sub{font-size:22px;font-weight:500;color:var(--rye);max-width:520px;margin:22px 0 26px}
+.cta{display:flex;flex-wrap:wrap;gap:12px}
+.plate{aspect-ratio:1/1;background:var(--pist);border-radius:50%;display:flex;align-items:center;justify-content:center;transform:rotate(-5deg);max-width:520px;margin:0 auto;width:100%}
+.plate svg{width:92%;margin-left:9%}
+.smear{stroke-dasharray:100;animation:smear 6s ease-in-out infinite}
+@keyframes smear{0%{stroke-dashoffset:100}45%,88%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:0;opacity:0}}
+.note{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;text-align:center;margin-top:14px;color:var(--rye)}
+.ticker{margin-top:clamp(28px,4vw,56px);background:var(--green);color:var(--pist);overflow:hidden;white-space:nowrap;font-family:'Anton',sans-serif;font-size:24px;letter-spacing:.04em;text-transform:uppercase;padding:16px 0}
+.ticker div{display:inline-block;animation:tick 28s linear infinite}
+.ticker b{font-weight:400;color:var(--cream)}
+@keyframes tick{to{transform:translateX(-50%)}}
+@media(max-width:900px){.hero .grid{grid-template-columns:1fr}.plate{max-width:320px}}
+
+/* pair */
+.pair{background:var(--pist)}
+.pair .grid{display:grid;grid-template-columns:1fr auto 1fr;gap:24px;align-items:center;margin-top:40px}
+.pair .card{background:var(--cream);border:2.5px solid var(--green);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.pair .card .art{width:100%;display:flex;justify-content:center;height:220px}
+.pair .card .art svg{height:100%;width:auto}
+.plus{font-family:'Anton',sans-serif;font-size:96px;line-height:1}
+@media(max-width:800px){.pair .grid{grid-template-columns:1fr}.plus{text-align:center}}
+
+/* craving tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:18px;margin-top:36px}
+.tile{position:relative;border-radius:18px;padding:26px;min-height:340px;display:flex;flex-direction:column;justify-content:space-between;text-decoration:none;overflow:hidden;border:2.5px solid var(--green);transition:transform .25s}
+.tile:hover{transform:translateY(-6px) rotate(-1deg)}
+.tile .art{height:170px;display:flex;justify-content:center}
+.tile .art svg{height:100%;width:auto}
+.tile h3{font-size:54px}
+.t1{background:var(--rye);color:var(--cream)}.t2{background:var(--tom);color:var(--dark)}.t3{background:var(--green);color:var(--cream)}
+
+/* product cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr));gap:18px;margin-top:36px}
+.pcard{background:#FBF5EA;border:2.5px solid var(--green);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.pcard .art{height:210px;display:flex;align-items:center;justify-content:center;border-radius:12px;text-decoration:none;transition:transform .3s}
+.pcard:hover .art{transform:rotate(-3deg) scale(1.04)}
+.pcard .art svg{height:88%;width:auto}
+.pcard h3 a{text-decoration:none}
+.pcard .meta{display:flex;justify-content:space-between;align-items:baseline;font-weight:700}
+.pcard .btn{margin-top:auto;width:100%}
+.filters{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.chip{min-height:46px;padding:8px 20px;border-radius:999px;border:2.5px solid var(--green);background:transparent;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:14px}
+.chip.on{background:var(--green);color:var(--cream)}
+
+/* craft / kosher / story */
+.craft{background:var(--rye);color:var(--cream)}
+.craft .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:28px;margin-top:40px}
+.craft .cols div{border-top:3px solid var(--tom);padding-top:16px}
+.craft h3{margin-bottom:8px}
+.kosher .box{border:2.5px solid var(--green);border-radius:18px;padding:clamp(24px,4vw,48px);display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center}
+.kosher h2{font-size:clamp(36px,5vw,64px)}
+.mark{width:150px;height:150px;border:2px dashed var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;font-weight:700;letter-spacing:.06em;padding:16px}
+@media(max-width:700px){.kosher .box{grid-template-columns:1fr}}
+.boxteaser{background:var(--tom);color:var(--dark)}
+.boxteaser .grid{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center}
+.boxteaser .btn{background:var(--dark);border-color:var(--dark)}
+.slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;background:var(--cream);border:2.5px solid var(--dark);border-radius:18px;padding:18px}
+.slot{aspect-ratio:3/4;border:2px dashed var(--green);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--green);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;text-align:center;padding:6px}
+.slot.full{border-style:solid;background:#FBF5EA;animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
+.slot svg{width:86%;height:auto;max-height:90%}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+@media(max-width:800px){.boxteaser .grid{grid-template-columns:1fr}}
+.story{background:#21372A;color:var(--cream);padding-bottom:0}
+.story .grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:end}
+.story .txt{padding-bottom:clamp(56px,8vw,112px);display:flex;flex-direction:column;gap:20px;align-items:flex-start}
+.story img{width:100%;display:block}
+@media(max-width:800px){.story .grid{grid-template-columns:1fr}.story .txt{padding-bottom:0}}
+.news{background:var(--pist)}
+.news form,.formrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+input,select{font:inherit;color:var(--green);min-height:52px;padding:12px 16px;border-radius:10px;border:2.5px solid var(--green);background:var(--cream);flex:1 1 220px;min-width:0}
+label{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:flex;flex-direction:column;gap:6px;flex:1 1 220px}
+footer.site{background:var(--green);color:var(--cream);padding:48px 0;font-size:15px}
+footer.site .row{display:flex;flex-wrap:wrap;gap:24px 48px;justify-content:space-between;align-items:flex-end}
+footer.site .big{font-family:'Anton',sans-serif;font-size:clamp(28px,4vw,48px);text-transform:uppercase;line-height:1}
+
+/* product page */
+.pdp{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,5vw,64px);padding:clamp(28px,4vw,56px) 0}
+.pdp .gallery{border-radius:18px;border:2.5px solid var(--green);min-height:420px;display:flex;align-items:center;justify-content:center;padding:32px;position:sticky;top:100px;align-self:start}
+.pdp .gallery svg{width:70%;max-height:420px;height:auto}
+.pdp h1{font-size:clamp(44px,6vw,84px)}
+.pdp .info{display:flex;flex-direction:column;gap:18px}
+.price{font-family:'Anton',sans-serif;font-size:40px}
+.qty{display:inline-flex;border:2.5px solid var(--green);border-radius:10px;overflow:hidden}
+.qty button{width:48px;min-height:48px;border:0;background:transparent;font-size:22px;font-weight:700}
+.qty span{min-width:44px;display:flex;align-items:center;justify-content:center;font-weight:700}
+dl{margin:0;border-top:2px solid var(--green)}
+dl div{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+dt{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+dd{margin:0}
+@media(max-width:800px){.pdp{grid-template-columns:1fr}.pdp .gallery{position:static;min-height:300px}}
+
+.maker{display:flex;align-items:center;gap:20px;background:#21372A;color:var(--cream);border-radius:18px;padding:0 24px 0 0;margin-bottom:56px;text-decoration:none;overflow:hidden;transition:transform .2s}.maker:hover{transform:translateY(-3px)}.maker img{width:150px;height:150px;object-fit:cover;object-position:50% 12%;display:block}.maker>span{display:flex;flex-direction:column;gap:4px;font-size:15px}.maker b{font-family:'Anton',sans-serif;font-weight:400;font-size:clamp(22px,3vw,32px);text-transform:uppercase;line-height:1}
+/* build your box */
+.byb{display:grid;grid-template-columns:1.2fr 1fr;gap:32px;padding-bottom:80px;align-items:start}
+.pick{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;border:2.5px solid var(--green);border-radius:14px;padding:12px 16px;background:#FBF5EA}
+.pick svg{width:56px;height:64px}
+.picks{display:flex;flex-direction:column;gap:10px;margin:14px 0 30px}
+.summary{position:sticky;top:100px;background:var(--green);color:var(--cream);border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:16px}
+.summary .slots{border-color:var(--cream)}
+.summary .qty{border-color:var(--cream)}
+@media(max-width:900px){.byb{grid-template-columns:1fr}.summary{position:static}}
+
+/* cart drawer */
+.scrim{position:fixed;inset:0;background:rgba(31,21,18,.55);z-index:40;opacity:0;pointer-events:none;transition:opacity .25s}
+.scrim.open{opacity:1;pointer-events:auto}
+aside.cart{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--cream);z-index:50;transform:translateX(102%);transition:transform .3s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;border-left:2.5px solid var(--green)}
+aside.cart.open{transform:none}
+.cart .hd,.cart .ft{padding:20px 22px}
+.cart .hd{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--green)}
+.cart .items{flex:1;overflow:auto;padding:8px 22px}
+.line{display:grid;grid-template-columns:54px 1fr auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.line svg{width:54px;height:60px}
+.line .qty button{width:40px;min-height:40px}
+.cart .ft{border-top:2px solid var(--green);display:flex;flex-direction:column;gap:12px}
+.tot{display:flex;justify-content:space-between;font-family:'Anton',sans-serif;font-size:28px;text-transform:uppercase}
+.small{font-size:13px;color:var(--rye)}
+.x{width:48px;height:48px;border-radius:10px;border:2.5px solid var(--green);background:transparent;font-size:20px;font-weight:700}
+.upsell{background:var(--pist);border-radius:12px;padding:14px;display:flex;gap:12px;align-items:center;justify-content:space-between;margin:14px 0}
+
+/* checkout */
+.co{display:grid;grid-template-columns:1.3fr 1fr;gap:32px;padding-bottom:80px;align-items:start}
+.co fieldset{border:2.5px solid var(--green);border-radius:16px;padding:20px;margin:0 0 16px;display:flex;flex-direction:column;gap:14px}
+.co legend{font-family:'Anton',sans-serif;font-size:24px;text-transform:uppercase;padding:0 8px}
+.pay{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.pay button{min-height:54px;border-radius:10px;border:2.5px solid var(--green);background:transparent;font-weight:700}
+.pay button.on{background:var(--green);color:var(--cream)}
+.msg{background:var(--pist);border-radius:12px;padding:14px 16px;font-weight:500}
+@media(max-width:900px){.co{grid-template-columns:1fr}}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--dark);color:var(--cream);padding:14px 22px;border-radius:10px;font-weight:700;z-index:60;transition:transform .3s;max-width:90vw;text-align:center}
+.toast.show{transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.smear{stroke-dashoffset:0}}
+</style>
+</head>
+<body>
+<header class="top">
+<div class="wrap row">
+<a class="logo" href="#home" aria-label="Schmearly home"><svg aria-hidden="true" viewBox="0 0 84 110"><path d="M68 24 C42 2 10 14 14 40 C18 64 66 54 70 82 C73 106 36 114 12 94" fill="none" stroke="#D44D3E" stroke-width="21" stroke-linecap="round"/></svg>CHMEARLY</a>
+<nav class="main" id="nav" aria-label="Main">
+<a href="#shop-bread">Bread</a><a href="#shop-spreads">Spreads</a><a href="#shop-sets">Pairings</a><a href="#box">Build Your Box</a><a href="#story">Our Story</a>
+</nav>
+<div class="right">
+<button class="btn cartbtn" id="cartBtn" aria-label="Open cart">Cart · <span id="count">0</span></button>
+<button class="icon" id="menuBtn" aria-label="Open menu" aria-expanded="false"><svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 8h16M4 16h16"/></svg></button>
+</div>
+</div>
+</header>
+<main id="app"></main>
+<footer class="site"><div class="wrap row">
+<div><div class="big">Good bread deserves<br>a great schmear.</div></div>
+<div>Clickable prototype. Demo prices, no real orders.<br>Delivery areas are not confirmed yet.</div>
+</div></footer>
+<div class="scrim" id="scrim"></div>
+<aside class="cart" id="cart" aria-label="Cart" aria-hidden="true">
+<div class="hd"><h3>Your cart</h3><button class="x" id="cartClose" aria-label="Close cart">✕</button></div>
+<div class="items" id="cartItems"></div>
+<div class="ft" id="cartFt"></div>
+</aside>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const PH=t=>`<span class="ph">[${t}]</span>`;
+const P=[
+{id:'rye',cat:'bread',name:'Dark Rye Sourdough',word:'Dark Rye',short:'A round loaf of real dark rye. Thick crust, dense crumb, deep flavor.',size:'2 lb (907 g) round loaf',price:14,color:'#33251F',bg:'#B7C49A',allerg:'Rye (gluten) '+PH('CONFIRM FULL LIST'),store:PH('STORAGE FROM PRODUCER'),pair:['spinach','eggplant','box']},
+{id:'spinach',cat:'spreads',name:'Spinach & Walnut Pkhali',word:'Spinach',short:'Bright, green and garlicky. The one to start with.',size:'8 oz (227 g) jar',price:12,color:'#7E9460',bg:'#E3EAD3',allerg:'Contains walnuts',store:'Keep refrigerated '+PH('CONFIRM'),pair:['rye','eggplant']},
+{id:'eggplant',cat:'spreads',name:'Eggplant & Walnut Pkhali',word:'Eggplant',short:'Roasted, smoky and rich. Made for a thick slice of rye.',size:'8 oz (227 g) jar',price:12,color:'#6B4660',bg:'#E6D9E1',allerg:'Contains walnuts',store:'Keep refrigerated '+PH('CONFIRM'),pair:['rye','greenbean']},
+{id:'greenbean',cat:'spreads',name:'Green Bean & Walnut Pkhali',word:'Green Bean',short:'Fresh and herby with a soft crunch.',size:'8 oz (227 g) jar',price:12,color:'#A9B97F',bg:'#EEF1DF',allerg:'Contains walnuts',store:'Keep refrigerated '+PH('CONFIRM'),pair:['rye','spinach']},
+{id:'box',cat:'sets',name:'The Perfect Schmear Box',word:'The Box',short:'One dark rye loaf plus all three pkhali spreads.',size:'1 loaf + 3 jars',price:48,color:'#D44D3E',bg:'#F3D2CB',allerg:'Contains walnuts, rye (gluten)',store:'Spreads: keep refrigerated '+PH('CONFIRM'),pair:['spinach','rye']}
+];
+const by=id=>P.find(p=>p.id===id);
+const cart={};
+const money=n=>'$'+n.toFixed(2);
+
+function slice(c,anim){return `<svg viewBox="0 0 640 430" role="img" aria-label="Slice of dark rye with a knife spreading pkhali"><path d="M56 398 L56 196 C56 92 148 36 260 36 C372 36 464 92 464 196 L464 398 Z" fill="#1F1512"/><path d="M78 380 L78 200 C78 110 160 60 260 60 C360 60 442 110 442 200 L442 380 Z" fill="#4A352B"/><circle cx="130" cy="150" r="7" fill="#33251F"/><circle cx="210" cy="110" r="5" fill="#33251F"/><circle cx="330" cy="120" r="8" fill="#33251F"/><circle cx="120" cy="330" r="6" fill="#33251F"/><circle cx="220" cy="350" r="8" fill="#33251F"/><circle cx="410" cy="330" r="7" fill="#33251F"/><path ${anim?'class="smear" pathLength="100"':''} d="M128 262 C170 176 232 318 292 232 S398 190 404 268" fill="none" stroke="${c}" stroke-width="84" stroke-linecap="round"/><g transform="translate(372 236) rotate(-32)"><rect x="0" y="-16" width="176" height="32" rx="16" fill="#F5EBDD"/><rect x="164" y="-13" width="112" height="26" rx="13" fill="#25372D"/></g></svg>`}
+function jar(p){const w=p.word.toUpperCase();return `<svg viewBox="0 0 200 240" role="img" aria-label="${p.name} jar"><rect x="45" y="6" width="110" height="28" rx="6" fill="#D44D3E"/><rect x="18" y="34" width="164" height="200" rx="26" fill="${p.color}"/><rect x="18" y="76" width="164" height="118" fill="#F5EBDD"/><path d="M34 98 C60 86 84 108 112 96 S150 90 166 98" fill="none" stroke="${p.color}" stroke-width="13" stroke-linecap="round"/><text x="30" y="${w.length>8?140:144}" font-family="Anton,Impact,sans-serif" font-size="${w.length>8?25:31}" fill="#25372D">${w}</text><text x="30" y="160" font-family="Archivo,Arial,sans-serif" font-weight="700" font-size="9.5" letter-spacing=".6" fill="#25372D">&amp; WALNUT PKHALI</text><text x="30" y="183" font-family="Anton,Impact,sans-serif" font-size="11" fill="#25372D">SCHMEARLY · 8 OZ</text></svg>`}
+function loaf(){return `<svg viewBox="-20 0 480 440" role="img" aria-label="Round dark rye loaf with paper band"><circle cx="220" cy="220" r="216" fill="#150E0C"/><circle cx="220" cy="220" r="196" fill="#33251F"/><path d="M90 120 C150 90 210 90 260 110 M70 190 C150 150 260 150 350 190 M80 330 C160 300 270 300 360 330 M150 380 C200 365 250 365 300 380" fill="none" stroke="#5A4034" stroke-width="7" stroke-linecap="round"/><g transform="rotate(-4 220 220)"><rect x="-16" y="160" width="330" height="120" fill="#D44D3E"/><rect x="314" y="160" width="142" height="120" fill="#F5EBDD"/><text x="6" y="214" font-family="Anton,Impact,sans-serif" font-size="46" fill="#F5EBDD">DARK RYE.</text><text x="6" y="262" font-family="Anton,Impact,sans-serif" font-size="46" fill="#1F1512">SCHMEAR IT.</text><text x="326" y="212" font-family="Anton,Impact,sans-serif" font-size="21" fill="#25372D">SCHMEARLY</text><text x="326" y="238" font-family="Archivo,Arial,sans-serif" font-weight="700" font-size="13" fill="#25372D">NET WT 2 LB</text></g></svg>`}
+function boxArt(){return `<svg viewBox="0 0 300 240" role="img" aria-label="Schmear box"><rect x="10" y="60" width="280" height="170" rx="14" fill="#D44D3E"/><rect x="10" y="60" width="280" height="40" rx="14" fill="#1F1512"/><circle cx="90" cy="150" r="52" fill="#33251F"/><rect x="160" y="108" width="34" height="84" rx="9" fill="#7E9460"/><rect x="200" y="108" width="34" height="84" rx="9" fill="#6B4660"/><rect x="240" y="108" width="34" height="84" rx="9" fill="#A9B97F"/><text x="24" y="88" font-family="Anton,Impact,sans-serif" font-size="22" fill="#F5EBDD">BETTER TOGETHER</text></svg>`}
+const art=p=>p.id==='rye'?loaf():p.id==='box'?boxArt():jar(p);
+
+function card(p){return `<article class="pcard"><a class="art" href="#product-${p.id}" style="background:${p.bg}" aria-label="${p.name}">${art(p)}</a><h3><a href="#product-${p.id}">${p.name}</a></h3><p class="small">${p.short}</p><div class="meta"><span>${p.size}</span><span>${money(p.price)}</span></div><button class="btn" data-add="${p.id}">Add to cart</button></article>`}
+
+function home(){return `<div class="view">
+<section class="hero"><div class="wrap grid">
+<div><h1><span>Don't just</span><span>eat bread.</span><span>Schmear it.</span></h1>
+<p class="sub">Artisan sourdough. Bold vegetable spreads. Made to be together.</p>
+<div class="cta"><a class="btn" href="#shop-spreads">Shop the spreads</a><a class="btn ghost" href="#shop-bread">Discover our bread</a></div></div>
+<div><div class="plate">${slice('#D44D3E',true)}</div><p class="note">[Hero loop video goes here: knife drags pkhali across rye]</p></div>
+</div>
+<div class="ticker" aria-hidden="true"><div>${'Dark rye sourdough · Spinach &amp; walnut · Eggplant &amp; walnut · Green bean &amp; walnut · <b>Better together</b> · '.repeat(6)}</div></div>
+</section>
+<section class="pair"><div class="wrap"><p class="eyebrow">The Perfect Pair</p><h2>Better together.</h2>
+<div class="grid">
+<div class="card"><div class="art">${loaf()}</div><h3>The bread</h3><p>Dark rye on natural sourdough. Dense, a little sour, built to carry a thick layer.</p><a class="btn ghost" href="#product-rye">See the loaf</a></div>
+<div class="plus" aria-hidden="true">+</div>
+<div class="card"><div class="art">${jar(by('spinach'))}</div><h3>The schmear</h3><p>Pkhali: vegetables, walnuts and herbs ground into a bright, spoonable spread.</p><a class="btn ghost" href="#shop-spreads">Meet the spreads</a></div>
+</div></div></section>
+<section><div class="wrap"><p class="eyebrow">Shop by craving</p><h2>What are you hungry for?</h2>
+<div class="tiles">
+<a class="tile t1" href="#shop-bread"><div class="art">${loaf()}</div><div><h3>Bread</h3><p>Sourdough rye, 2 lb round</p></div></a>
+<a class="tile t2" href="#shop-spreads"><div class="art">${jar(by('eggplant'))}</div><div><h3>Spreads</h3><p>Three pkhali, 8 oz jars</p></div></a>
+<a class="tile t3" href="#shop-sets"><div class="art">${boxArt()}</div><div><h3>Sets</h3><p>Bread and spread, boxed</p></div></a>
+</div></div></section>
+<section style="padding-top:0"><div class="wrap"><p class="eyebrow">Meet the schmears</p><h2>Three jars. Three moods.</h2>
+<div class="cards">${P.filter(p=>p.cat==='spreads').map(card).join('')}
+<article class="pcard" style="border-style:dashed"><div class="art" style="background:#EDE3D2"><span class="ph">[NEXT FLAVOR]</span></div><h3>Seasonal &amp; Specialty</h3><p class="small">Small batches that come and go with the season.</p><a class="btn ghost" href="#news">Tell me first</a></article>
+</div></div></section>
+<section class="craft" id="craft"><div class="wrap"><p class="eyebrow">The Craft</p><h2>Made the slow way.</h2>
+<div class="cols">
+<div><h3>Sourdough</h3><p>Natural starter, no shortcuts. Rye takes its time, so we give it time.</p></div>
+<div><h3>Vegetables</h3><p>Spinach, eggplant, green beans. The vegetable is the main ingredient, not the garnish.</p></div>
+<div><h3>Walnuts</h3><p>Ground into every pkhali for body and a round, toasty depth.</p></div>
+<div><h3>Recipes</h3><p>Pkhali comes from the Georgian table. We kept the method and made it jar-ready.</p></div>
+</div></div></section>
+<section class="kosher" id="kosher"><div class="wrap"><div class="box"><div><p class="eyebrow">Kosher by design</p><h2>Certified, start to finish.</h2><p style="margin-top:14px;max-width:560px">Every loaf and every jar is made under kosher supervision by ${PH('CERTIFYING AGENCY')}. It is part of how we work, and you will find the mark on every label.</p></div><div class="mark">[CERTIFICATION MARK]</div></div></div></section>
+<section class="boxteaser"><div class="wrap grid"><div><p class="eyebrow">Build your box</p><h2>Pick a loaf. Add three jars.</h2><p style="margin:16px 0 24px;font-size:20px;font-weight:500;max-width:480px">Mix the flavors your way and send it all in one box.</p><a class="btn light" href="#box" style="background:var(--dark);color:var(--cream);border-color:var(--dark)">Start building</a></div>
+<div class="slots"><div class="slot full">${loaf()}</div><div class="slot full">${jar(by('spinach'))}</div><div class="slot full">${jar(by('eggplant'))}</div><div class="slot">Your pick</div></div></div></section>
+<section class="story" id="story"><div class="wrap grid"><div class="txt"><p class="eyebrow" style="color:var(--pist)">Our story</p><h2>One baker. One mill. One idea.</h2><p style="font-size:20px;max-width:480px">Uriel Shtern mills, bakes and mixes every batch himself. Schmearly started with a simple thought: good bread deserves a great schmear.</p></div><img src="founder.jpg" alt="Illustrated portrait of the baker behind Schmearly with his wooden grain mill and a bowl of fresh flour"></div></section>
+<section class="news" id="news"><div class="wrap"><p class="eyebrow">Newsletter</p><h2>New jars first.</h2><p style="margin-top:12px;font-size:20px;font-weight:500">Seasonal flavors, special boxes, baking days.</p>
+<form id="newsForm"><input type="email" required placeholder="you@email.com" aria-label="Email address"><button class="btn">Sign me up</button></form><p class="small" id="newsMsg" style="margin-top:10px"></p></div></section></div>`}
+
+const CATS={all:'All',bread:'Bread',spreads:'Spreads',sets:'Bread & Spread Sets'};
+function shop(cat){const list=P.filter(p=>cat==='all'||p.cat===cat);return `<div class="view wrap" style="padding-top:40px;padding-bottom:80px"><p class="eyebrow">Shop</p><h2>${CATS[cat]}</h2>
+<div class="filters">${Object.keys(CATS).map(k=>`<a class="chip ${k===cat?'on':''}" href="#shop-${k}" style="display:inline-flex;align-items:center;text-decoration:none">${CATS[k]}</a>`).join('')}</div>
+<div class="cards">${list.map(card).join('')}</div></div>`}
+
+function pdp(p){return `<div class="view wrap"><div class="pdp">
+<div class="gallery" style="background:${p.bg}">${art(p)}</div>
+<div class="info"><p class="eyebrow"><a href="#shop-${p.cat}">${CATS[p.cat]}</a></p><h1>${p.name}</h1><p style="font-size:21px;font-weight:500">${p.short}</p>
+<div class="price">${money(p.price)} <span class="small" style="font-family:Archivo,sans-serif">demo price</span></div>
+<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><div class="qty"><button data-pq="-1" aria-label="Decrease quantity">−</button><span id="pq">1</span><button data-pq="1" aria-label="Increase quantity">+</button></div><button class="btn" style="flex:1 1 200px" data-add="${p.id}" data-usepq="1">Add to cart</button></div>
+<dl><div><dt>Size</dt><dd>${p.size}</dd></div><div><dt>Ingredients</dt><dd>${PH('INGREDIENT LIST FROM PRODUCER')}</dd></div><div><dt>Allergens</dt><dd>${p.allerg}</dd></div><div><dt>Kosher</dt><dd>Certified by ${PH('AGENCY')} ${PH('MARK')}</dd></div><div><dt>Storage</dt><dd>${p.store}</dd></div><div><dt>Shelf life</dt><dd>${PH('CONFIRMED SHELF LIFE')}</dd></div></dl>
+</div></div>
+${p.id==='rye'?`<a href="#story" class="maker"><img src="founder.jpg" alt="Illustrated portrait of the Schmearly baker"><span><span class="eyebrow" style="color:var(--pist)">The baker</span><b>Milled, mixed and baked by Uriel Shtern.</b><span>Read our story</span></span></a>`:''}
+<div style="padding-bottom:80px"><p class="eyebrow">${p.cat==='bread'?'This loaf wants a schmear':'Goes best with'}</p><h2 style="font-size:clamp(36px,5vw,64px)">Better together.</h2><div class="cards">${p.pair.map(i=>card(by(i))).join('')}</div></div></div>`}
+
+const bx={bread:1,spreads:{spinach:0,eggplant:0,greenbean:0}};
+const bxCount=()=>Object.values(bx.spreads).reduce((a,b)=>a+b,0);
+function box(){const sp=P.filter(p=>p.cat==='spreads'),n=bxCount();
+const picked=sp.flatMap(p=>Array(bx.spreads[p.id]).fill(p));
+const total=bx.bread*by('rye').price+picked.reduce((a,p)=>a+p.price,0);
+const slots=[bx.bread?`<div class="slot full">${loaf()}</div>`:'<div class="slot">No bread</div>',...[0,1,2].map(i=>picked[i]?`<div class="slot full">${jar(picked[i])}</div>`:'<div class="slot">Jar '+(i+1)+'</div>')].join('');
+return `<div class="view wrap" style="padding-top:40px"><p class="eyebrow">Build your box</p><h2>Your box, your rules.</h2>
+<div class="byb" style="margin-top:32px"><div>
+<h3>1. The bread</h3><div class="picks"><div class="pick">${loaf()}<div><b>Dark Rye Sourdough</b><div class="small">2 lb round · ${money(14)}</div></div><div class="qty"><button data-bb="-1" aria-label="Remove bread">−</button><span>${bx.bread}</span><button data-bb="1" aria-label="Add bread">+</button></div></div></div>
+<h3>2. Three spreads <span class="small" style="font-family:Archivo,sans-serif;text-transform:none">${n} of 3 picked</span></h3><div class="picks">${sp.map(p=>`<div class="pick">${jar(p)}<div><b>${p.name}</b><div class="small">8 oz · ${money(p.price)}</div></div><div class="qty"><button data-bs="${p.id}" data-d="-1" aria-label="Remove ${p.word}">−</button><span>${bx.spreads[p.id]}</span><button data-bs="${p.id}" data-d="1" aria-label="Add ${p.word}">+</button></div></div>`).join('')}</div>
+</div>
+<div class="summary"><h3>In your box</h3><div class="slots">${slots}</div><div class="tot"><span>Total</span><span>${money(total)}</span></div><p class="small" style="color:var(--pist)">Demo prices. Spreads ship chilled, so delivery options depend on your ZIP code.</p><button class="btn light" id="boxAdd" ${n===3?'':'disabled'}>${n===3?'Add box to cart':'Pick '+(3-n)+' more'}</button></div></div></div>`}
+
+let pay='card',zipMsg='';
+function checkout(){const ids=Object.keys(cart);if(!ids.length)return `<div class="view wrap" style="padding:80px 0;min-height:60vh"><h2>Your cart is empty.</h2><p style="margin:16px 0 24px">Start with a jar or build a box.</p><a class="btn" href="#shop-all">Go to shop</a></div>`;
+const sub=ids.reduce((a,i)=>a+by(i).price*cart[i],0);
+return `<div class="view wrap" style="padding-top:40px"><p class="eyebrow">Checkout</p><h2>Almost yours.</h2>
+<form class="co" id="coForm" style="margin-top:32px"><div>
+<fieldset><legend>Express</legend><div class="pay"><button type="button" data-pay="apple" class="${pay==='apple'?'on':''}">Apple Pay</button><button type="button" data-pay="google" class="${pay==='google'?'on':''}">Google Pay</button><button type="button" data-pay="card" class="${pay==='card'?'on':''}">Card</button></div></fieldset>
+<fieldset><legend>Contact</legend><label>Email<input type="email" required autocomplete="email"></label></fieldset>
+<fieldset><legend>Delivery</legend><div class="formrow" style="margin:0"><label>ZIP code<input id="zip" inputmode="numeric" maxlength="5" pattern="[0-9]{5}" required placeholder="10001"></label><button type="button" class="btn ghost" id="zipBtn" style="align-self:flex-end">Check options</button></div><div id="zipOut">${zipMsg}</div><label>Street address<input required autocomplete="street-address"></label></fieldset>
+${pay==='card'?`<fieldset><legend>Card</legend><label>Card number<input inputmode="numeric" placeholder="Demo only, do not enter a real card"></label></fieldset>`:''}
+</div>
+<div class="summary" style="background:#FBF5EA;color:var(--green);border:2.5px solid var(--green)"><h3>Order</h3>${ids.map(i=>`<div style="display:flex;justify-content:space-between;gap:12px"><span>${cart[i]} × ${by(i).name}</span><b>${money(by(i).price*cart[i])}</b></div>`).join('')}
+<div style="display:flex;justify-content:space-between"><span>Delivery</span><span>${PH('BY ZIP')}</span></div><div class="tot"><span>Subtotal</span><span>${money(sub)}</span></div><button class="btn">Place order</button><p class="small" id="coMsg">Prototype: no payment is taken and no order is sent.</p></div></form></div>`}
+
+function route(){const h=(location.hash||'#home').slice(1);let html,anchor;
+if(h.startsWith('shop-')&&CATS[h.slice(5)])html=shop(h.slice(5));
+else if(h.startsWith('product-')&&by(h.slice(8)))html=pdp(by(h.slice(8)));
+else if(h==='box')html=box();
+else if(h==='checkout')html=checkout();
+else{html=home();if(['craft','kosher','story','news'].includes(h))anchor=h}
+$('#app').innerHTML=html;$('#nav').classList.remove('open');
+$$('#nav a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+h));
+if(anchor){const e=document.getElementById(anchor);e&&e.scrollIntoView()}else window.scrollTo(0,0)}
+function rerender(html){const y=window.scrollY;$('#app').innerHTML=html;const v=$('.view');v&&(v.style.animation='none');window.scrollTo(0,y)}
+
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),2200)}
+function add(id,q=1){cart[id]=(cart[id]||0)+q;drawCart();const b=$('#cartBtn');b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump')}
+function drawCart(){const ids=Object.keys(cart),n=ids.reduce((a,i)=>a+cart[i],0);$('#count').textContent=n;
+const sub=ids.reduce((a,i)=>a+by(i).price*cart[i],0);
+const hasBread=cart.rye||cart.box,hasSpread=ids.some(i=>by(i).cat!=='bread');
+let up='';if(n&&!hasBread)up=`<div class="upsell"><span><b>No bread yet?</b><br><span class="small">Dark Rye Sourdough, ${money(14)}</span></span><button class="btn" data-add="rye" style="min-height:44px;padding:8px 16px">Add</button></div>`;
+else if(n&&!hasSpread)up=`<div class="upsell"><span><b>This loaf wants a schmear.</b><br><span class="small">Spinach &amp; Walnut, ${money(12)}</span></span><button class="btn" data-add="spinach" style="min-height:44px;padding:8px 16px">Add</button></div>`;
+$('#cartItems').innerHTML=n?ids.map(i=>{const p=by(i);return `<div class="line">${art(p)}<div><b>${p.name}</b><div class="small">${money(p.price)} · ${p.size}</div></div><div class="qty"><button data-cq="${i}" data-d="-1" aria-label="Decrease ${p.name}">−</button><span>${cart[i]}</span><button data-cq="${i}" data-d="1" aria-label="Increase ${p.name}">+</button></div></div>`}).join('')+up:'<p style="padding:28px 0">Nothing here yet. Bread is lonely without a schmear.</p>';
+$('#cartFt').innerHTML=n?`<div class="tot"><span>Subtotal</span><span>${money(sub)}</span></div><p class="small">Demo prices. Chilled delivery options are shown by ZIP code at checkout.</p><a class="btn" href="#checkout" id="toCo">Checkout</a>`:`<a class="btn" href="#shop-all" id="toCo">Go to shop</a>`}
+function openCart(o){$('#cart').classList.toggle('open',o);$('#scrim').classList.toggle('open',o);$('#cart').setAttribute('aria-hidden',!o)}
+
+document.addEventListener('click',e=>{const t=e.target.closest('button,a');if(!t)return;
+if(t.id==='cartBtn')return openCart(true);
+if(t.id==='cartClose')return openCart(false);
+if(t.id==='toCo')return openCart(false);
+if(t.id==='menuBtn'){const o=$('#nav').classList.toggle('open');t.setAttribute('aria-expanded',o);return}
+if(t.dataset.add){const q=t.dataset.usepq?+$('#pq').textContent:1;add(t.dataset.add,q);if(!t.closest('.upsell')){const old=t.textContent;t.textContent='Schmeared in';t.classList.add('added');setTimeout(()=>{t.textContent=old;t.classList.remove('added')},1100)}return}
+if(t.dataset.pq){const s=$('#pq');s.textContent=Math.max(1,+s.textContent+ +t.dataset.pq);return}
+if(t.dataset.cq){cart[t.dataset.cq]+= +t.dataset.d;if(cart[t.dataset.cq]<=0)delete cart[t.dataset.cq];drawCart();if(location.hash==='#checkout')rerender(checkout());return}
+if(t.dataset.bb){bx.bread=Math.min(2,Math.max(0,bx.bread+ +t.dataset.bb));return rerender(box())}
+if(t.dataset.bs){const d=+t.dataset.d,id=t.dataset.bs;if(d>0&&bxCount()>=3)return toast('Three jars per box. Remove one to swap.');bx.spreads[id]=Math.max(0,bx.spreads[id]+d);return rerender(box())}
+if(t.id==='boxAdd'){if(bx.bread)add('rye',bx.bread);Object.keys(bx.spreads).forEach(i=>bx.spreads[i]&&add(i,bx.spreads[i]));bx.spreads={spinach:0,eggplant:0,greenbean:0};rerender(box());toast('Your box is in the cart');return openCart(true)}
+if(t.dataset.pay){pay=t.dataset.pay;return rerender(checkout())}
+if(t.id==='zipBtn'){const z=$('#zip').value.trim();zipMsg=/^\d{5}$/.test(z)?`<div class="msg">Options for ${z} will appear here: standard for bread, chilled for spreads. Delivery zones are not confirmed yet.</div>`:`<div class="msg">Enter a 5 digit ZIP code.</div>`;$('#zipOut').innerHTML=zipMsg;return}
+});
+$('#scrim').addEventListener('click',()=>openCart(false));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')openCart(false)});
+document.addEventListener('submit',e=>{e.preventDefault();
+if(e.target.id==='newsForm'){$('#newsMsg').textContent='Prototype: sign-up is not connected yet, nothing was sent.';e.target.reset()}
+if(e.target.id==='coForm'){$('#coMsg').textContent='Prototype only: no order was placed and no payment was taken.';toast('Demo checkout complete. Nothing was charged.')}});
+window.addEventListener('hashchange',route);
+drawCart();route();
+</script>
+</body>
+</html>
