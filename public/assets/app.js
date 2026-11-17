@@ -1,0 +1,179 @@
+import { PRODUCTS as P, SITE, byId as by } from './catalog.js';
+
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+// "[SOMETHING]" in catalog text → visible dashed placeholder until the owner fills it in.
+const ph = t => String(t).replace(/\[([^\]]+)\]/g, '<span class="ph">[$1]</span>');
+const money = c => '$' + (c / 100).toFixed(2);
+
+/* ---------- cart (remembered in this browser) ---------- */
+const CART_KEY = 'schmearly-cart-v1';
+const cart = {};
+try {
+  const saved = JSON.parse(localStorage.getItem(CART_KEY) || '{}');
+  for (const [id, q] of Object.entries(saved)) if (by(id) && Number.isInteger(q) && q > 0) cart[id] = Math.min(q, SITE.maxQtyPerItem);
+} catch { /* storage unavailable: start empty */ }
+const saveCart = () => { try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch { } };
+const cartCount = () => Object.values(cart).reduce((a, b) => a + b, 0);
+const cartSub = () => Object.keys(cart).reduce((a, i) => a + by(i).price * cart[i], 0);
+
+/* ---------- illustrations ---------- */
+function slice(c, anim) { return `<svg viewBox="0 0 640 430" role="img" aria-label="Slice of dark rye with a knife spreading pkhali"><path d="M56 398 L56 196 C56 92 148 36 260 36 C372 36 464 92 464 196 L464 398 Z" fill="#1F1512"/><path d="M78 380 L78 200 C78 110 160 60 260 60 C360 60 442 110 442 200 L442 380 Z" fill="#4A352B"/><circle cx="130" cy="150" r="7" fill="#33251F"/><circle cx="210" cy="110" r="5" fill="#33251F"/><circle cx="330" cy="120" r="8" fill="#33251F"/><circle cx="120" cy="330" r="6" fill="#33251F"/><circle cx="220" cy="350" r="8" fill="#33251F"/><circle cx="410" cy="330" r="7" fill="#33251F"/><path ${anim ? 'class="smear" pathLength="100"' : ''} d="M128 262 C170 176 232 318 292 232 S398 190 404 268" fill="none" stroke="${c}" stroke-width="84" stroke-linecap="round"/><g transform="translate(372 236) rotate(-32)"><rect x="0" y="-16" width="176" height="32" rx="16" fill="#F5EBDD"/><rect x="164" y="-13" width="112" height="26" rx="13" fill="#25372D"/></g></svg>` }
+function jar(p) { const w = p.word.toUpperCase(); return `<svg viewBox="0 0 200 240" role="img" aria-label="${p.name} jar"><rect x="45" y="6" width="110" height="28" rx="6" fill="#D44D3E"/><rect x="18" y="34" width="164" height="200" rx="26" fill="${p.color}"/><rect x="18" y="76" width="164" height="118" fill="#F5EBDD"/><path d="M34 98 C60 86 84 108 112 96 S150 90 166 98" fill="none" stroke="${p.color}" stroke-width="13" stroke-linecap="round"/><text x="30" y="${w.length > 8 ? 140 : 144}" font-family="Anton,Impact,sans-serif" font-size="${w.length > 8 ? 25 : 31}" fill="#25372D">${w}</text><text x="30" y="160" font-family="Archivo,Arial,sans-serif" font-weight="700" font-size="9.5" letter-spacing=".6" fill="#25372D">&amp; WALNUT PKHALI</text><text x="30" y="183" font-family="Anton,Impact,sans-serif" font-size="11" fill="#25372D">SCHMEARLY · 8 OZ</text></svg>` }
+function loaf() { return `<svg viewBox="-20 0 480 440" role="img" aria-label="Round dark rye loaf with paper band"><circle cx="220" cy="220" r="216" fill="#150E0C"/><circle cx="220" cy="220" r="196" fill="#33251F"/><path d="M90 120 C150 90 210 90 260 110 M70 190 C150 150 260 150 350 190 M80 330 C160 300 270 300 360 330 M150 380 C200 365 250 365 300 380" fill="none" stroke="#5A4034" stroke-width="7" stroke-linecap="round"/><g transform="rotate(-4 220 220)"><rect x="-16" y="160" width="330" height="120" fill="#D44D3E"/><rect x="314" y="160" width="142" height="120" fill="#F5EBDD"/><text x="6" y="214" font-family="Anton,Impact,sans-serif" font-size="46" fill="#F5EBDD">DARK RYE.</text><text x="6" y="262" font-family="Anton,Impact,sans-serif" font-size="46" fill="#1F1512">SCHMEAR IT.</text><text x="326" y="212" font-family="Anton,Impact,sans-serif" font-size="21" fill="#25372D">SCHMEARLY</text><text x="326" y="238" font-family="Archivo,Arial,sans-serif" font-weight="700" font-size="13" fill="#25372D">NET WT 2 LB</text></g></svg>` }
+function boxArt() { return `<svg viewBox="0 0 300 240" role="img" aria-label="Schmear box"><rect x="10" y="60" width="280" height="170" rx="14" fill="#D44D3E"/><rect x="10" y="60" width="280" height="40" rx="14" fill="#1F1512"/><circle cx="90" cy="150" r="52" fill="#33251F"/><rect x="160" y="108" width="34" height="84" rx="9" fill="#7E9460"/><rect x="200" y="108" width="34" height="84" rx="9" fill="#6B4660"/><rect x="240" y="108" width="34" height="84" rx="9" fill="#A9B97F"/><text x="24" y="88" font-family="Anton,Impact,sans-serif" font-size="22" fill="#F5EBDD">BETTER TOGETHER</text></svg>` }
+const art = p => p.id === 'rye' ? loaf() : p.id === 'box' ? boxArt() : jar(p);
+
+/* ---------- views ---------- */
+function card(p) { return `<article class="pcard"><a class="art" href="#product-${p.id}" style="background:${p.bg}" aria-label="${p.name}">${art(p)}</a><h3><a href="#product-${p.id}">${p.name}</a></h3><p class="small">${p.short}</p><div class="meta"><span>${p.size}</span><span>${money(p.price)}</span></div><button class="btn" data-add="${p.id}">Add to cart</button></article>` }
+
+function home() { return `<div class="view">
+<section class="hero"><div class="wrap grid">
+<div><h1><span>Don't just</span><span>eat bread.</span><span>Schmear it.</span></h1>
+<p class="sub">Artisan sourdough. Bold vegetable spreads. Made to be together.</p>
+<div class="cta"><a class="btn" href="#shop-spreads">Shop the spreads</a><a class="btn ghost" href="#shop-bread">Discover our bread</a></div></div>
+<div><div class="plate">${slice('#D44D3E', true)}</div></div>
+</div>
+<div class="ticker" aria-hidden="true"><div>${'Dark rye sourdough · Spinach &amp; walnut · Eggplant &amp; walnut · Green bean &amp; walnut · <b>Better together</b> · '.repeat(6)}</div></div>
+</section>
+<section class="pair"><div class="wrap"><p class="eyebrow">The Perfect Pair</p><h2>Better together.</h2>
+<div class="grid">
+<div class="card"><div class="art">${loaf()}</div><h3>The bread</h3><p>Dark rye on natural sourdough. Dense, a little sour, built to carry a thick layer.</p><a class="btn ghost" href="#product-rye">See the loaf</a></div>
+<div class="plus" aria-hidden="true">+</div>
+<div class="card"><div class="art">${jar(by('spinach'))}</div><h3>The schmear</h3><p>Pkhali: vegetables, walnuts and herbs ground into a bright, spoonable spread.</p><a class="btn ghost" href="#shop-spreads">Meet the spreads</a></div>
+</div></div></section>
+<section><div class="wrap"><p class="eyebrow">Shop by craving</p><h2>What are you hungry for?</h2>
+<div class="tiles">
+<a class="tile t1" href="#shop-bread"><div class="art">${loaf()}</div><div><h3>Bread</h3><p>Sourdough rye, 2 lb round</p></div></a>
+<a class="tile t2" href="#shop-spreads"><div class="art">${jar(by('eggplant'))}</div><div><h3>Spreads</h3><p>Three pkhali, 8 oz jars</p></div></a>
+<a class="tile t3" href="#shop-sets"><div class="art">${boxArt()}</div><div><h3>Sets</h3><p>Bread and spread, boxed</p></div></a>
+</div></div></section>
+<section style="padding-top:0"><div class="wrap"><p class="eyebrow">Meet the schmears</p><h2>Three jars. Three moods.</h2>
+<div class="cards">${P.filter(p => p.cat === 'spreads').map(card).join('')}
+<article class="pcard" style="border-style:dashed"><div class="art" style="background:#EDE3D2"><span class="ph">[NEXT FLAVOR]</span></div><h3>Seasonal &amp; Specialty</h3><p class="small">Small batches that come and go with the season.</p><a class="btn ghost" href="#news">Tell me first</a></article>
+</div></div></section>
+<section class="craft" id="craft"><div class="wrap"><p class="eyebrow">The Craft</p><h2>Made the slow way.</h2>
+<div class="cols">
+<div><h3>Sourdough</h3><p>Natural starter, no shortcuts. Rye takes its time, so we give it time.</p></div>
+<div><h3>Vegetables</h3><p>Spinach, eggplant, green beans. The vegetable is the main ingredient, not the garnish.</p></div>
+<div><h3>Walnuts</h3><p>Ground into every pkhali for body and a round, toasty depth.</p></div>
+<div><h3>Recipes</h3><p>Pkhali comes from the Georgian table. We kept the method and made it jar-ready.</p></div>
+</div></div></section>
+<section class="kosher" id="kosher"><div class="wrap"><div class="box"><div><p class="eyebrow">Kosher by design</p><h2>Certified, start to finish.</h2><p style="margin-top:14px;max-width:560px">Every loaf and every jar is made under kosher supervision by ${ph(SITE.kosherAgency)}. It is part of how we work, and you will find the mark on every label.</p></div><div class="mark">[CERTIFICATION MARK]</div></div></div></section>
+<section class="boxteaser"><div class="wrap grid"><div><p class="eyebrow">Build your box</p><h2>Pick a loaf. Add three jars.</h2><p style="margin:16px 0 24px;font-size:20px;font-weight:500;max-width:480px">Mix the flavors your way and send it all in one box.</p><a class="btn" href="#box">Start building</a></div>
+<div class="slots"><div class="slot full">${loaf()}</div><div class="slot full">${jar(by('spinach'))}</div><div class="slot full">${jar(by('eggplant'))}</div><div class="slot">Your pick</div></div></div></section>
+<section class="story" id="story"><div class="wrap grid"><div class="txt"><p class="eyebrow" style="color:var(--pist)">Our story</p><h2>One baker. One mill. One idea.</h2><p style="font-size:20px;max-width:480px">Uriel Shtern mills, bakes and mixes every batch himself. Schmearly started with a simple thought: good bread deserves a great schmear.</p></div><img src="founder.jpg" alt="Illustrated portrait of the baker behind Schmearly with his wooden grain mill and a bowl of fresh flour" loading="lazy" width="1000" height="1000" style="height:auto"></div></section>
+<section class="news" id="news"><div class="wrap"><p class="eyebrow">Newsletter</p><h2>New jars first.</h2><p style="margin-top:12px;font-size:20px;font-weight:500">Seasonal flavors, special boxes, baking days.</p>
+<form id="newsForm"><input type="email" required placeholder="you@email.com" aria-label="Email address"><button class="btn">Sign me up</button></form><p class="small" id="newsMsg" style="margin-top:10px"></p></div></section></div>` }
+
+const CATS = { all: 'All', bread: 'Bread', spreads: 'Spreads', sets: 'Bread & Spread Sets' };
+function shop(cat) { const list = P.filter(p => cat === 'all' || p.cat === cat); return `<div class="view wrap" style="padding-top:40px;padding-bottom:80px"><p class="eyebrow">Shop</p><h2>${CATS[cat]}</h2>
+<div class="filters">${Object.keys(CATS).map(k => `<a class="chip ${k === cat ? 'on' : ''}" href="#shop-${k}">${CATS[k]}</a>`).join('')}</div>
+<div class="cards">${list.map(card).join('')}</div></div>` }
+
+function pdp(p) { return `<div class="view wrap"><div class="pdp">
+<div class="gallery" style="background:${p.bg}">${art(p)}</div>
+<div class="info"><p class="eyebrow"><a href="#shop-${p.cat}">${CATS[p.cat]}</a></p><h1>${p.name}</h1><p style="font-size:21px;font-weight:500">${p.short}</p>
+<div class="price">${money(p.price)}</div>
+<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><div class="qty"><button data-pq="-1" aria-label="Decrease quantity">−</button><span id="pq">1</span><button data-pq="1" aria-label="Increase quantity">+</button></div><button class="btn" style="flex:1 1 200px" data-add="${p.id}" data-usepq="1">Add to cart</button></div>
+<dl><div><dt>Size</dt><dd>${p.size}</dd></div><div><dt>Ingredients</dt><dd>${ph(p.ingredients)}</dd></div><div><dt>Allergens</dt><dd>${ph(p.allergens)}</dd></div><div><dt>Kosher</dt><dd>Certified by ${ph(SITE.kosherAgency)}</dd></div><div><dt>Storage</dt><dd>${ph(p.storage)}</dd></div><div><dt>Shelf life</dt><dd>${ph(p.shelfLife)}</dd></div></dl>
+</div></div>
+${p.id === 'rye' ? `<a href="#story" class="maker"><img src="founder.jpg" alt="Illustrated portrait of the Schmearly baker" loading="lazy"><span><span class="eyebrow" style="color:var(--pist)">The baker</span><b>Milled, mixed and baked by Uriel Shtern.</b><span>Read our story</span></span></a>` : ''}
+<div style="padding-bottom:80px"><p class="eyebrow">${p.cat === 'bread' ? 'This loaf wants a schmear' : 'Goes best with'}</p><h2 style="font-size:clamp(36px,5vw,64px)">Better together.</h2><div class="cards">${p.pair.map(i => card(by(i))).join('')}</div></div></div>` }
+
+const bx = { bread: 1, spreads: { spinach: 0, eggplant: 0, greenbean: 0 } };
+const bxCount = () => Object.values(bx.spreads).reduce((a, b) => a + b, 0);
+function box() { const sp = P.filter(p => p.cat === 'spreads'), n = bxCount();
+  const picked = sp.flatMap(p => Array(bx.spreads[p.id]).fill(p));
+  const total = bx.bread * by('rye').price + picked.reduce((a, p) => a + p.price, 0);
+  const slots = [bx.bread ? `<div class="slot full">${loaf()}</div>` : '<div class="slot">No bread</div>', ...[0, 1, 2].map(i => picked[i] ? `<div class="slot full">${jar(picked[i])}</div>` : '<div class="slot">Jar ' + (i + 1) + '</div>')].join('');
+  return `<div class="view wrap" style="padding-top:40px"><p class="eyebrow">Build your box</p><h2>Your box, your rules.</h2>
+<div class="byb" style="margin-top:32px"><div>
+<h3>1. The bread</h3><div class="picks"><div class="pick">${loaf()}<div><b>Dark Rye Sourdough</b><div class="small">2 lb round · ${money(by('rye').price)}</div></div><div class="qty"><button data-bb="-1" aria-label="Remove bread">−</button><span>${bx.bread}</span><button data-bb="1" aria-label="Add bread">+</button></div></div></div>
+<h3>2. Three spreads <span class="small" style="font-family:Archivo,sans-serif;text-transform:none">${n} of 3 picked</span></h3><div class="picks">${sp.map(p => `<div class="pick">${jar(p)}<div><b>${p.name}</b><div class="small">8 oz · ${money(p.price)}</div></div><div class="qty"><button data-bs="${p.id}" data-d="-1" aria-label="Remove ${p.word}">−</button><span>${bx.spreads[p.id]}</span><button data-bs="${p.id}" data-d="1" aria-label="Add ${p.word}">+</button></div></div>`).join('')}</div>
+</div>
+<div class="summary"><h3>In your box</h3><div class="slots">${slots}</div><div class="tot"><span>Total</span><span>${money(total)}</span></div><p class="small" style="color:var(--pist)">Spreads ship chilled. Shipping is calculated at checkout.</p><button class="btn light" id="boxAdd" ${n === 3 ? '' : 'disabled'}>${n === 3 ? 'Add box to cart' : 'Pick ' + (3 - n) + ' more'}</button></div></div></div>` }
+
+let zipMsg = '';
+function orderLines() { return Object.keys(cart).map(i => { const p = by(i); return `<div class="line">${art(p)}<div><b>${p.name}</b><div class="small">${money(p.price)} · ${p.size}</div></div><div class="qty"><button data-cq="${i}" data-d="-1" aria-label="Decrease ${p.name}">−</button><span>${cart[i]}</span><button data-cq="${i}" data-d="1" aria-label="Increase ${p.name}">+</button></div></div>` }).join('') }
+function checkout() { if (!cartCount()) return `<div class="view wrap" style="padding:80px 0;min-height:60vh"><h2>Your cart is empty.</h2><p style="margin:16px 0 24px">Start with a jar or build a box.</p><a class="btn" href="#shop-all">Go to shop</a></div>`;
+  return `<div class="view wrap" style="padding-top:40px"><p class="eyebrow">Checkout</p><h2>Almost yours.</h2>
+<div class="co" style="margin-top:32px"><div>
+<fieldset><legend>Your order</legend><div>${orderLines()}</div></fieldset>
+<fieldset><legend>Delivery</legend><p>Bread ships standard. Spreads ship chilled, so delivery options depend on where you are.</p><div class="formrow" style="margin:0"><label>ZIP code<input id="zip" inputmode="numeric" maxlength="5" placeholder="10001"></label><button type="button" class="btn ghost" id="zipBtn" style="align-self:flex-end">Check delivery</button></div><div id="zipOut">${zipMsg}</div></fieldset>
+</div>
+<div class="summary" style="background:#FBF5EA;color:var(--green);border:2.5px solid var(--green)"><h3>Summary</h3>${Object.keys(cart).map(i => `<div style="display:flex;justify-content:space-between;gap:12px"><span>${cart[i]} × ${by(i).name}</span><b>${money(by(i).price * cart[i])}</b></div>`).join('')}
+<div style="display:flex;justify-content:space-between"><span>Delivery</span><span class="small">Calculated at payment</span></div><div class="tot"><span>Subtotal</span><span>${money(cartSub())}</span></div><button class="btn" id="payBtn">Pay securely</button><p class="small" id="coMsg">You will enter your email, address and card (or Apple Pay / Google Pay) on the secure Stripe page.</p></div></div></div>` }
+
+function thanks() { return `<div class="view wrap" style="padding:80px 0;min-height:60vh"><p class="eyebrow">Order received</p><h2>Thank you. It's schmear time.</h2><p style="margin:16px 0 24px;font-size:20px;max-width:560px">Your payment went through. A receipt is on its way to your email, and we'll be in touch about delivery.</p><a class="btn" href="#home">Back to the shop</a></div>` }
+
+/* ---------- router ---------- */
+function route() { const h = (location.hash || '#home').slice(1); let html, anchor;
+  if (h.startsWith('shop-') && CATS[h.slice(5)]) html = shop(h.slice(5));
+  else if (h.startsWith('product-') && by(h.slice(8))) html = pdp(by(h.slice(8)));
+  else if (h === 'box') html = box();
+  else if (h === 'checkout') html = checkout();
+  else if (h === 'thanks') html = thanks();
+  else { html = home(); if (['craft', 'kosher', 'story', 'news'].includes(h)) anchor = h }
+  $('#app').innerHTML = html; $('#nav').classList.remove('open'); $('#menuBtn').setAttribute('aria-expanded', 'false');
+  $$('#nav a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + h));
+  const prod = h.startsWith('product-') && by(h.slice(8));
+  const page = prod ? prod.name : h.startsWith('shop-') ? CATS[h.slice(5)] : { box: 'Build Your Box', checkout: 'Checkout', thanks: 'Thank you' }[h];
+  document.title = page ? `${page} · Schmearly` : 'Schmearly · Dark rye sourdough & pkhali spreads';
+  if (anchor) { const e = document.getElementById(anchor); e && e.scrollIntoView() } else window.scrollTo(0, 0) }
+function rerender(html) { const y = window.scrollY; $('#app').innerHTML = html; const v = $('.view'); v && (v.style.animation = 'none'); window.scrollTo(0, y) }
+
+/* ---------- cart UI ---------- */
+function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('show'), 2600) }
+function add(id, q = 1) { cart[id] = Math.min(SITE.maxQtyPerItem, (cart[id] || 0) + q); saveCart(); drawCart(); const b = $('#cartBtn'); b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump') }
+function drawCart() { const ids = Object.keys(cart), n = cartCount(); $('#count').textContent = n;
+  const hasBread = cart.rye || cart.box, hasSpread = ids.some(i => by(i).cat !== 'bread');
+  let up = ''; if (n && !hasBread) up = `<div class="upsell"><span><b>No bread yet?</b><br><span class="small">Dark Rye Sourdough, ${money(by('rye').price)}</span></span><button class="btn" data-add="rye" style="min-height:44px;padding:8px 16px">Add</button></div>`;
+  else if (n && !hasSpread) up = `<div class="upsell"><span><b>This loaf wants a schmear.</b><br><span class="small">Spinach &amp; Walnut, ${money(by('spinach').price)}</span></span><button class="btn" data-add="spinach" style="min-height:44px;padding:8px 16px">Add</button></div>`;
+  $('#cartItems').innerHTML = n ? orderLines() + up : '<p style="padding:28px 0">Nothing here yet. Bread is lonely without a schmear.</p>';
+  $('#cartFt').innerHTML = n ? `<div class="tot"><span>Subtotal</span><span>${money(cartSub())}</span></div><p class="small">Shipping is calculated at checkout.</p><a class="btn" href="#checkout" id="toCo">Checkout</a>` : `<a class="btn" href="#shop-all" id="toCo">Go to shop</a>` }
+function openCart(o) { $('#cart').classList.toggle('open', o); $('#scrim').classList.toggle('open', o); $('#cart').setAttribute('aria-hidden', String(!o)); $('#cart').inert = !o; if (o) $('#cartClose').focus() }
+
+async function pay(btn) {
+  btn.disabled = true; const old = btn.textContent; btn.textContent = 'Opening secure payment…';
+  try {
+    const res = await fetch('/api/checkout', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ items: Object.entries(cart).map(([id, qty]) => ({ id, qty })) }) });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.url) { location.href = data.url; return }
+    throw new Error(data.error || 'Payment could not be started.');
+  } catch (err) {
+    $('#coMsg').textContent = err.message === 'Failed to fetch' ? 'Connection problem. Please try again.' : err.message;
+    toast('Payment could not be started');
+    btn.disabled = false; btn.textContent = old;
+  }
+}
+
+document.addEventListener('click', e => { const t = e.target.closest('button,a'); if (!t) return;
+  if (t.id === 'cartBtn') return openCart(true);
+  if (t.id === 'cartClose') return openCart(false);
+  if (t.id === 'toCo') return openCart(false);
+  if (t.id === 'payBtn') return pay(t);
+  if (t.id === 'menuBtn') { const o = $('#nav').classList.toggle('open'); t.setAttribute('aria-expanded', o); return }
+  if (t.dataset.add) { const q = t.dataset.usepq ? +$('#pq').textContent : 1; add(t.dataset.add, q); if (!t.closest('.upsell')) { const old = t.textContent; t.textContent = 'Schmeared in'; t.classList.add('added'); setTimeout(() => { t.textContent = old; t.classList.remove('added') }, 1100) } return }
+  if (t.dataset.pq) { const s = $('#pq'); s.textContent = Math.min(SITE.maxQtyPerItem, Math.max(1, +s.textContent + +t.dataset.pq)); return }
+  if (t.dataset.cq) { const id = t.dataset.cq; cart[id] = Math.min(SITE.maxQtyPerItem, cart[id] + +t.dataset.d); if (cart[id] <= 0) delete cart[id]; saveCart(); drawCart(); if (location.hash === '#checkout') rerender(checkout()); return }
+  if (t.dataset.bb) { bx.bread = Math.min(2, Math.max(0, bx.bread + +t.dataset.bb)); return rerender(box()) }
+  if (t.dataset.bs) { const d = +t.dataset.d, id = t.dataset.bs; if (d > 0 && bxCount() >= 3) return toast('Three jars per box. Remove one to swap.'); bx.spreads[id] = Math.max(0, bx.spreads[id] + d); return rerender(box()) }
+  if (t.id === 'boxAdd') { if (bx.bread) add('rye', bx.bread); Object.keys(bx.spreads).forEach(i => bx.spreads[i] && add(i, bx.spreads[i])); bx.spreads = { spinach: 0, eggplant: 0, greenbean: 0 }; rerender(box()); toast('Your box is in the cart'); return openCart(true) }
+  if (t.id === 'zipBtn') { const z = $('#zip').value.trim(); zipMsg = /^\d{5}$/.test(z) ? `<div class="msg">We ship within the US. Chilled delivery to ${z}: <span class="ph">[DELIVERY ZONES TO CONFIRM]</span>. Final shipping options appear on the payment page.</div>` : `<div class="msg">Enter a 5 digit ZIP code.</div>`; $('#zipOut').innerHTML = zipMsg; return }
+});
+$('#scrim').addEventListener('click', () => openCart(false));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') openCart(false) });
+document.addEventListener('submit', e => { e.preventDefault();
+  if (e.target.id === 'newsForm') { $('#newsMsg').textContent = 'Thanks! Our newsletter is launching soon. [SIGN-UP SERVICE TO CONNECT]'; e.target.reset() } });
+window.addEventListener('hashchange', route);
+
+// Returning from a successful Stripe payment: empty the cart and show the thank-you view.
+const qs = new URLSearchParams(location.search);
+if (qs.get('order') === 'success') {
+  for (const k of Object.keys(cart)) delete cart[k];
+  saveCart();
+  history.replaceState(null, '', location.pathname + '#thanks');
+}
+$('#cart').inert = true;
+$('#year').textContent = new Date().getFullYear();
+drawCart(); route();

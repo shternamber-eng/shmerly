@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Schmearly · Dark rye sourdough &amp; pkhali spreads</title>
+<meta name="description" content="Artisan dark rye sourdough and bold vegetable &amp; walnut pkhali spreads. Kosher, made in small batches, shipped to your door.">
+<meta name="theme-color" content="#25372D">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Schmearly · Don't just eat bread. Schmear it.">
+<meta property="og:description" content="Artisan dark rye sourdough and bold vegetable &amp; walnut pkhali spreads.">
+<meta property="og:image" content="/founder.jpg">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/styles.css">
+<script type="module" src="/assets/app.js"></script>
+</head>
+<body>
+<header class="top">
+<div class="wrap row">
+<a class="logo" href="#home" aria-label="Schmearly home"><svg aria-hidden="true" viewBox="0 0 84 110"><path d="M68 24 C42 2 10 14 14 40 C18 64 66 54 70 82 C73 106 36 114 12 94" fill="none" stroke="#D44D3E" stroke-width="21" stroke-linecap="round"/></svg>CHMEARLY</a>
+<nav class="main" id="nav" aria-label="Main">
+<a href="#shop-bread">Bread</a><a href="#shop-spreads">Spreads</a><a href="#shop-sets">Pairings</a><a href="#box">Build Your Box</a><a href="#story">Our Story</a>
+</nav>
+<div class="right">
+<button class="btn cartbtn" id="cartBtn" aria-label="Open cart">Cart · <span id="count">0</span></button>
+<button class="icon" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="nav"><svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 8h16M4 16h16"/></svg></button>
+</div>
+</div>
+</header>
+<main id="app" tabindex="-1"><noscript><div class="wrap" style="padding:80px 0"><h2>Please turn on JavaScript</h2><p>Our shop needs JavaScript to show products and take orders.</p></div></noscript></main>
+<footer class="site"><div class="wrap row">
+<div><div class="big">Good bread deserves<br>a great schmear.</div></div>
+<nav class="flinks" aria-label="Footer"><a href="#shop-all">Shop</a><a href="#box">Build Your Box</a><a href="#kosher">Kosher</a><a href="#story">Our Story</a><a href="#news">Newsletter</a></nav>
+<div>Questions? <span class="ph">[CONTACT EMAIL / PHONE]</span><br>Secure payments by Stripe. Ships within the US.<br>© <span id="year">2026</span> Schmearly</div>
+</div></footer>
+<div class="scrim" id="scrim"></div>
+<aside class="cart" id="cart" aria-label="Cart" aria-hidden="true">
+<div class="hd"><h3>Your cart</h3><button class="x" id="cartClose" aria-label="Close cart">✕</button></div>
+<div class="items" id="cartItems"></div>
+<div class="ft" id="cartFt"></div>
+</aside>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
