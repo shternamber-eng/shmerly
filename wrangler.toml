@@ -4,6 +4,8 @@
 name = "shmerly"
 main = "src/worker.js"
 compatibility_date = "2026-05-01"
+# Keep variables set in the Cloudflare dashboard (e.g. STRIPE_SECRET_KEY) on every Git deploy.
+keep_vars = true
 
 [assets]
 directory = "./public"
