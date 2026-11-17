@@ -1,13 +1,13 @@
-// Cloudflare Pages Function: POST /api/checkout
+// POST /api/checkout  (called from src/worker.js)
 // Body: { items: [{ id: "rye", qty: 2 }, ...] }
 // Creates a Stripe Checkout Session and returns { url } to redirect the buyer to.
 //
-// Required secret (Cloudflare Pages → Settings → Variables and Secrets):
+// Required secret (Cloudflare → Workers & Pages → shmerly → Settings → Variables and Secrets):
 //   STRIPE_SECRET_KEY = sk_test_... (test mode) or sk_live_... (real payments)
 //
 // Prices are always taken from the catalog on the server, never from the browser.
 
-import { PRODUCTS, CURRENCY, SITE } from '../../public/assets/catalog.js';
+import { PRODUCTS, CURRENCY, SITE } from '../public/assets/catalog.js';
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
@@ -15,7 +15,10 @@ const json = (data, status = 200) =>
     headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
   });
 
-export async function onRequestPost({ request, env }) {
+export const methodNotAllowed = () => json({ error: 'Method not allowed.' }, 405);
+export const notFound = () => json({ error: 'Not found.' }, 404);
+
+export async function handleCheckout(request, env) {
   if (!env.STRIPE_SECRET_KEY) {
     return json({ error: 'Online payment is not set up yet. Please try again later.' }, 503);
   }
@@ -71,8 +74,4 @@ export async function onRequestPost({ request, env }) {
     return json({ error: 'Payment could not be started. Please try again in a minute.' }, 502);
   }
   return json({ url: data.url });
-}
-
-export function onRequest() {
-  return json({ error: 'Method not allowed.' }, 405);
 }

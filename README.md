@@ -1,39 +1,36 @@
 # Schmearly
 
-Интернет-магазин Schmearly: ржаной хлеб на закваске и пхали. Хостинг — Cloudflare Pages, оплата — Stripe Checkout.
+Интернет-магазин Schmearly: ржаной хлеб на закваске и пхали. Хостинг — Cloudflare Workers (статический сайт + функция оплаты), оплата — Stripe Checkout.
 
 ## Структура
 
 ```
-public/                 ← сайт (то, что публикует Cloudflare)
+public/                 ← сайт (статические файлы)
   index.html
   assets/catalog.js     ← ТОВАРЫ И ЦЕНЫ (в центах: 1400 = $14.00) — менять здесь
   assets/app.js         ← логика сайта: страницы, корзина, оплата
   assets/styles.css
   founder.jpg, favicon.svg, 404.html, _headers, robots.txt
-functions/api/checkout.js ← серверная функция: создаёт оплату в Stripe
-wrangler.toml           ← настройки Cloudflare Pages
+src/worker.js           ← точка входа Worker: /api/* → код, остальное → файлы из public/
+src/checkout.js         ← POST /api/checkout: создаёт оплату в Stripe
+wrangler.toml           ← настройки Cloudflare
 ```
 
 Текст в `[КВАДРАТНЫХ СКОБКАХ]` в `catalog.js` и на сайте — заглушка, её нужно заменить настоящими данными.
 
-## Публикация на Cloudflare Pages (один раз)
+## Публикация
 
-1. https://dash.cloudflare.com → **Workers & Pages** → **Create** → вкладка **Pages** → **Connect to Git**.
-2. Выбрать репозиторий `shternamber-eng/shmerly`.
-3. Настройки сборки: Framework preset — **None**, Build command — *пусто*, Build output directory — **public**.
-4. **Save and Deploy**. Сайт появится на `https://shmerly.pages.dev` (или похожем адресе).
-
-После этого каждое обновление ветки `main` на GitHub публикуется автоматически.
+Worker `shmerly` в Cloudflare подключён к этому репозиторию: каждое обновление ветки `main` на GitHub
+собирается и публикуется автоматически (команда `npx wrangler deploy`).
+Имя Worker в панели Cloudflare должно совпадать с `name` в `wrangler.toml`.
 
 ## Подключение Stripe
 
 1. https://dashboard.stripe.com → **Developers → API keys** → скопировать **Secret key**
    (`sk_test_...` для проверки, `sk_live_...` для настоящих платежей).
-2. Cloudflare → проект `shmerly` → **Settings → Variables and Secrets** → **Add** →
-   тип **Secret**, имя `STRIPE_SECRET_KEY`, значение — ключ. Сохранить.
-3. **Deployments** → у последнего деплоя **Retry deployment** (чтобы ключ подхватился).
-4. Apple Pay / Google Pay включаются в Stripe: **Settings → Payment methods**.
+2. Cloudflare → **Workers & Pages** → `shmerly` → **Settings → Variables and Secrets** → **Add** →
+   тип **Secret**, имя `STRIPE_SECRET_KEY`, значение — ключ → **Deploy**.
+3. Apple Pay / Google Pay включаются в Stripe: **Settings → Payment methods**.
 
 Без ключа сайт работает, но кнопка оплаты показывает «Online payment is not set up yet».
 
@@ -42,7 +39,7 @@ wrangler.toml           ← настройки Cloudflare Pages
 ## Локальный запуск
 
 ```
-npx wrangler pages dev
+npx wrangler dev
 ```
 
 Для проверки оплаты локально создайте файл `.dev.vars` со строкой `STRIPE_SECRET_KEY=sk_test_...` (он не попадает в git).
