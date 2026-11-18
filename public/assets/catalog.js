@@ -9,15 +9,39 @@
 export const CURRENCY = 'usd';
 
 export const PRODUCTS = [
+  // Breads: `crust` / `crumb` color the drawn loaf, `band` is the word printed on its paper band.
   {
-    id: 'rye', cat: 'bread', name: 'Dark Rye Sourdough', word: 'Dark Rye',
-    short: 'A round loaf of real dark rye. Thick crust, dense crumb, deep flavor.',
-    size: '2 lb (907 g) round loaf', price: 1400, color: '#33251F', bg: '#B7C49A',
+    id: 'rye', cat: 'bread', name: 'Organic Dark Rye Sourdough', word: 'Dark Rye',
+    short: 'Real dark rye on natural starter, no commercial yeast. Thick crust, dense crumb, deep flavor.',
+    size: '30 oz (850 g) loaf', price: 1800, color: '#33251F', bg: '#B7C49A',
+    crust: '#150E0C', crumb: '#33251F', band: 'DARK RYE.',
     ingredients: '[INGREDIENT LIST FROM PRODUCER]',
     allergens: 'Rye (gluten) [CONFIRM FULL LIST]',
     storage: '[STORAGE FROM PRODUCER]',
     shelfLife: '[CONFIRMED SHELF LIFE]',
     pair: ['spinach', 'eggplant', 'box'],
+  },
+  {
+    id: 'redwheat', cat: 'bread', name: 'Organic Red Whole Wheat Sourdough', word: 'Red Wheat',
+    short: 'Organic red whole wheat on natural starter, no commercial yeast. Nutty, hearty and made for every day.',
+    size: '30 oz (850 g) loaf', price: 1800, color: '#7A4A2E', bg: '#EBD9C3',
+    crust: '#3A2116', crumb: '#7A4A2E', band: 'RED WHEAT.',
+    ingredients: '[INGREDIENT LIST FROM PRODUCER]',
+    allergens: 'Wheat (gluten) [CONFIRM FULL LIST]',
+    storage: '[STORAGE FROM PRODUCER]',
+    shelfLife: '[CONFIRMED SHELF LIFE]',
+    pair: ['greenbean', 'spinach', 'eggplant'],
+  },
+  {
+    id: 'olive', cat: 'bread', name: 'Organic Kalamata Olive & Rosemary Whole Wheat Sourdough', word: 'Olive',
+    short: 'Whole wheat sourdough with Kalamata olives and rosemary, on natural starter with no commercial yeast.',
+    size: '30 oz (850 g) loaf', price: 1800, color: '#5B4A3A', bg: '#DCE0C8',
+    crust: '#2B2119', crumb: '#5B4A3A', band: 'KALAMATA.', olives: true,
+    ingredients: '[INGREDIENT LIST FROM PRODUCER]',
+    allergens: 'Wheat (gluten) [CONFIRM FULL LIST]',
+    storage: '[STORAGE FROM PRODUCER]',
+    shelfLife: '[CONFIRMED SHELF LIFE]',
+    pair: ['eggplant', 'spinach', 'greenbean'],
   },
   {
     id: 'spinach', cat: 'spreads', name: 'Spinach & Walnut Pkhali', word: 'Spinach',
@@ -51,7 +75,7 @@ export const PRODUCTS = [
   },
   {
     id: 'box', cat: 'sets', name: 'The Perfect Schmear Box', word: 'The Box',
-    short: 'One dark rye loaf plus all three pkhali spreads.',
+    short: 'One organic dark rye loaf plus all three pkhali spreads.',
     size: '1 loaf + 3 jars', price: 4800, color: '#D44D3E', bg: '#F3D2CB',
     ingredients: '[INGREDIENT LIST FROM PRODUCER]',
     allergens: 'Contains walnuts, rye (gluten)',

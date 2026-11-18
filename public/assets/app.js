@@ -19,9 +19,10 @@ const cartSub = () => Object.keys(cart).reduce((a, i) => a + by(i).price * cart[
 /* ---------- illustrations ---------- */
 function slice(c, anim) { return `<svg viewBox="0 0 640 430" role="img" aria-label="Slice of dark rye with a knife spreading pkhali"><path d="M56 398 L56 196 C56 92 148 36 260 36 C372 36 464 92 464 196 L464 398 Z" fill="#1F1512"/><path d="M78 380 L78 200 C78 110 160 60 260 60 C360 60 442 110 442 200 L442 380 Z" fill="#4A352B"/><circle cx="130" cy="150" r="7" fill="#33251F"/><circle cx="210" cy="110" r="5" fill="#33251F"/><circle cx="330" cy="120" r="8" fill="#33251F"/><circle cx="120" cy="330" r="6" fill="#33251F"/><circle cx="220" cy="350" r="8" fill="#33251F"/><circle cx="410" cy="330" r="7" fill="#33251F"/><path ${anim ? 'class="smear" pathLength="100"' : ''} d="M128 262 C170 176 232 318 292 232 S398 190 404 268" fill="none" stroke="${c}" stroke-width="84" stroke-linecap="round"/><g transform="translate(372 236) rotate(-32)"><rect x="0" y="-16" width="176" height="32" rx="16" fill="#F5EBDD"/><rect x="164" y="-13" width="112" height="26" rx="13" fill="#25372D"/></g></svg>` }
 function jar(p) { const w = p.word.toUpperCase(); return `<svg viewBox="0 0 200 240" role="img" aria-label="${p.name} jar"><rect x="45" y="6" width="110" height="28" rx="6" fill="#D44D3E"/><rect x="18" y="34" width="164" height="200" rx="26" fill="${p.color}"/><rect x="18" y="76" width="164" height="118" fill="#F5EBDD"/><path d="M34 98 C60 86 84 108 112 96 S150 90 166 98" fill="none" stroke="${p.color}" stroke-width="13" stroke-linecap="round"/><text x="30" y="${w.length > 8 ? 140 : 144}" font-family="Anton,Impact,sans-serif" font-size="${w.length > 8 ? 25 : 31}" fill="#25372D">${w}</text><text x="30" y="160" font-family="Archivo,Arial,sans-serif" font-weight="700" font-size="9.5" letter-spacing=".6" fill="#25372D">&amp; WALNUT PKHALI</text><text x="30" y="183" font-family="Anton,Impact,sans-serif" font-size="11" fill="#25372D">SCHMEARLY · 8 OZ</text></svg>` }
-function loaf() { return `<svg viewBox="-20 0 480 440" role="img" aria-label="Round dark rye loaf with paper band"><circle cx="220" cy="220" r="216" fill="#150E0C"/><circle cx="220" cy="220" r="196" fill="#33251F"/><path d="M90 120 C150 90 210 90 260 110 M70 190 C150 150 260 150 350 190 M80 330 C160 300 270 300 360 330 M150 380 C200 365 250 365 300 380" fill="none" stroke="#5A4034" stroke-width="7" stroke-linecap="round"/><g transform="rotate(-4 220 220)"><rect x="-16" y="160" width="330" height="120" fill="#D44D3E"/><rect x="314" y="160" width="142" height="120" fill="#F5EBDD"/><text x="6" y="214" font-family="Anton,Impact,sans-serif" font-size="46" fill="#F5EBDD">DARK RYE.</text><text x="6" y="262" font-family="Anton,Impact,sans-serif" font-size="46" fill="#1F1512">SCHMEAR IT.</text><text x="326" y="212" font-family="Anton,Impact,sans-serif" font-size="21" fill="#25372D">SCHMEARLY</text><text x="326" y="238" font-family="Archivo,Arial,sans-serif" font-weight="700" font-size="13" fill="#25372D">NET WT 2 LB</text></g></svg>` }
+function loaf(p = by('rye')) { const olives = p.olives ? '<g fill="#2A1E2E"><ellipse cx="140" cy="100" rx="11" ry="8"/><ellipse cx="300" cy="120" rx="10" ry="7"/><ellipse cx="200" cy="330" rx="11" ry="8"/><ellipse cx="330" cy="350" rx="9" ry="7"/><ellipse cx="110" cy="320" rx="9" ry="7"/></g><g stroke="#7E9460" stroke-width="5" stroke-linecap="round"><path d="M250 80 l18 -10 M90 140 l16 8 M270 370 l18 -6"/></g>' : '';
+  return `<svg viewBox="-20 0 480 440" role="img" aria-label="${p.name} loaf with paper band"><circle cx="220" cy="220" r="216" fill="${p.crust}"/><circle cx="220" cy="220" r="196" fill="${p.crumb}"/><path d="M90 120 C150 90 210 90 260 110 M70 190 C150 150 260 150 350 190 M80 330 C160 300 270 300 360 330 M150 380 C200 365 250 365 300 380" fill="none" stroke="rgba(245,235,221,.18)" stroke-width="7" stroke-linecap="round"/>${olives}<g transform="rotate(-4 220 220)"><rect x="-16" y="160" width="330" height="120" fill="#D44D3E"/><rect x="314" y="160" width="142" height="120" fill="#F5EBDD"/><text x="6" y="214" font-family="Anton,Impact,sans-serif" font-size="46" fill="#F5EBDD">${p.band}</text><text x="6" y="262" font-family="Anton,Impact,sans-serif" font-size="46" fill="#1F1512">SCHMEAR IT.</text><text x="326" y="212" font-family="Anton,Impact,sans-serif" font-size="21" fill="#25372D">SCHMEARLY</text><text x="326" y="238" font-family="Archivo,Arial,sans-serif" font-weight="700" font-size="13" fill="#25372D">NET WT 30 OZ</text></g></svg>` }
 function boxArt() { return `<svg viewBox="0 0 300 240" role="img" aria-label="Schmear box"><rect x="10" y="60" width="280" height="170" rx="14" fill="#D44D3E"/><rect x="10" y="60" width="280" height="40" rx="14" fill="#1F1512"/><circle cx="90" cy="150" r="52" fill="#33251F"/><rect x="160" y="108" width="34" height="84" rx="9" fill="#7E9460"/><rect x="200" y="108" width="34" height="84" rx="9" fill="#6B4660"/><rect x="240" y="108" width="34" height="84" rx="9" fill="#A9B97F"/><text x="24" y="88" font-family="Anton,Impact,sans-serif" font-size="22" fill="#F5EBDD">BETTER TOGETHER</text></svg>` }
-const art = p => p.id === 'rye' ? loaf() : p.id === 'box' ? boxArt() : jar(p);
+const art = p => p.cat === 'bread' ? loaf(p) : p.id === 'box' ? boxArt() : jar(p);
 
 /* ---------- views ---------- */
 function card(p) { return `<article class="pcard"><a class="art" href="#product-${p.id}" style="background:${p.bg}" aria-label="${p.name}">${art(p)}</a><h3><a href="#product-${p.id}">${p.name}</a></h3><p class="small">${p.short}</p><div class="meta"><span>${p.size}</span><span>${money(p.price)}</span></div><button class="btn" data-add="${p.id}">Add to cart</button></article>` }
@@ -33,17 +34,17 @@ function home() { return `<div class="view">
 <div class="cta"><a class="btn" href="#shop-spreads">Shop the spreads</a><a class="btn ghost" href="#shop-bread">Discover our bread</a></div></div>
 <div><div class="plate">${slice('#D44D3E', true)}</div></div>
 </div>
-<div class="ticker" aria-hidden="true"><div>${'Dark rye sourdough · Spinach &amp; walnut · Eggplant &amp; walnut · Green bean &amp; walnut · <b>Better together</b> · '.repeat(6)}</div></div>
+<div class="ticker" aria-hidden="true"><div>${'Dark rye · Red whole wheat · Kalamata olive &amp; rosemary · Spinach &amp; walnut · Eggplant &amp; walnut · Green bean &amp; walnut · <b>Better together</b> · '.repeat(6)}</div></div>
 </section>
 <section class="pair"><div class="wrap"><p class="eyebrow">The Perfect Pair</p><h2>Better together.</h2>
 <div class="grid">
-<div class="card"><div class="art">${loaf()}</div><h3>The bread</h3><p>Dark rye on natural sourdough. Dense, a little sour, built to carry a thick layer.</p><a class="btn ghost" href="#product-rye">See the loaf</a></div>
+<div class="card"><div class="art">${loaf()}</div><h3>The bread</h3><p>Organic sourdough on natural starter, no commercial yeast. Dense, a little sour, built to carry a thick layer.</p><a class="btn ghost" href="#shop-bread">See the loaves</a></div>
 <div class="plus" aria-hidden="true">+</div>
 <div class="card"><div class="art">${jar(by('spinach'))}</div><h3>The schmear</h3><p>Pkhali: vegetables, walnuts and herbs ground into a bright, spoonable spread.</p><a class="btn ghost" href="#shop-spreads">Meet the spreads</a></div>
 </div></div></section>
 <section><div class="wrap"><p class="eyebrow">Shop by craving</p><h2>What are you hungry for?</h2>
 <div class="tiles">
-<a class="tile t1" href="#shop-bread"><div class="art">${loaf()}</div><div><h3>Bread</h3><p>Sourdough rye, 2 lb round</p></div></a>
+<a class="tile t1" href="#shop-bread"><div class="art">${loaf()}</div><div><h3>Bread</h3><p>Three organic sourdoughs, 30 oz</p></div></a>
 <a class="tile t2" href="#shop-spreads"><div class="art">${jar(by('eggplant'))}</div><div><h3>Spreads</h3><p>Three pkhali, 8 oz jars</p></div></a>
 <a class="tile t3" href="#shop-sets"><div class="art">${boxArt()}</div><div><h3>Sets</h3><p>Bread and spread, boxed</p></div></a>
 </div></div></section>
@@ -53,7 +54,7 @@ function home() { return `<div class="view">
 </div></div></section>
 <section class="craft" id="craft"><div class="wrap"><p class="eyebrow">The Craft</p><h2>Made the slow way.</h2>
 <div class="cols">
-<div><h3>Sourdough</h3><p>Natural starter, no shortcuts. Rye takes its time, so we give it time.</p></div>
+<div><h3>Sourdough</h3><p>Organic grain and natural starter, no commercial yeast. Good bread takes its time, so we give it time.</p></div>
 <div><h3>Vegetables</h3><p>Spinach, eggplant, green beans. The vegetable is the main ingredient, not the garnish.</p></div>
 <div><h3>Walnuts</h3><p>Ground into every pkhali for body and a round, toasty depth.</p></div>
 <div><h3>Recipes</h3><p>Pkhali comes from the Georgian table. We kept the method and made it jar-ready.</p></div>
@@ -77,18 +78,22 @@ function pdp(p) { return `<div class="view wrap"><div class="pdp">
 <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><div class="qty"><button data-pq="-1" aria-label="Decrease quantity">−</button><span id="pq">1</span><button data-pq="1" aria-label="Increase quantity">+</button></div><button class="btn" style="flex:1 1 200px" data-add="${p.id}" data-usepq="1">Add to cart</button></div>
 <dl><div><dt>Size</dt><dd>${p.size}</dd></div><div><dt>Ingredients</dt><dd>${ph(p.ingredients)}</dd></div><div><dt>Allergens</dt><dd>${ph(p.allergens)}</dd></div><div><dt>Kosher</dt><dd>Certified by ${ph(SITE.kosherAgency)}</dd></div><div><dt>Storage</dt><dd>${ph(p.storage)}</dd></div><div><dt>Shelf life</dt><dd>${ph(p.shelfLife)}</dd></div></dl>
 </div></div>
-${p.id === 'rye' ? `<a href="#story" class="maker"><img src="founder.jpg" alt="Illustrated portrait of the Schmearly baker" loading="lazy"><span><span class="eyebrow" style="color:var(--pist)">The baker</span><b>Milled, mixed and baked by Uriel Shtern.</b><span>Read our story</span></span></a>` : ''}
+${p.cat === 'bread' ? `<a href="#story" class="maker"><img src="founder.jpg" alt="Illustrated portrait of the Schmearly baker" loading="lazy"><span><span class="eyebrow" style="color:var(--pist)">The baker</span><b>Milled, mixed and baked by Uriel Shtern.</b><span>Read our story</span></span></a>` : ''}
 <div style="padding-bottom:80px"><p class="eyebrow">${p.cat === 'bread' ? 'This loaf wants a schmear' : 'Goes best with'}</p><h2 style="font-size:clamp(36px,5vw,64px)">Better together.</h2><div class="cards">${p.pair.map(i => card(by(i))).join('')}</div></div></div>` }
 
-const bx = { bread: 1, spreads: { spinach: 0, eggplant: 0, greenbean: 0 } };
-const bxCount = () => Object.values(bx.spreads).reduce((a, b) => a + b, 0);
-function box() { const sp = P.filter(p => p.cat === 'spreads'), n = bxCount();
-  const picked = sp.flatMap(p => Array(bx.spreads[p.id]).fill(p));
-  const total = bx.bread * by('rye').price + picked.reduce((a, p) => a + p.price, 0);
-  const slots = [bx.bread ? `<div class="slot full">${loaf()}</div>` : '<div class="slot">No bread</div>', ...[0, 1, 2].map(i => picked[i] ? `<div class="slot full">${jar(picked[i])}</div>` : '<div class="slot">Jar ' + (i + 1) + '</div>')].join('');
+const MAX_BOX_BREADS = 2;
+const emptyBox = () => ({ breads: Object.fromEntries(P.filter(p => p.cat === 'bread').map((p, i) => [p.id, i ? 0 : 1])), spreads: Object.fromEntries(P.filter(p => p.cat === 'spreads').map(p => [p.id, 0])) });
+let bx = emptyBox();
+const sum = o => Object.values(o).reduce((a, b) => a + b, 0);
+const bxCount = () => sum(bx.spreads);
+function box() { const sp = P.filter(p => p.cat === 'spreads'), br = P.filter(p => p.cat === 'bread'), n = bxCount(), nb = sum(bx.breads);
+  const picked = sp.flatMap(p => Array(bx.spreads[p.id]).fill(p)), loaves = br.flatMap(p => Array(bx.breads[p.id]).fill(p));
+  const total = [...loaves, ...picked].reduce((a, p) => a + p.price, 0);
+  const slots = [loaves[0] ? `<div class="slot full">${loaf(loaves[0])}</div>` : '<div class="slot">No bread</div>', ...[0, 1, 2].map(i => picked[i] ? `<div class="slot full">${jar(picked[i])}</div>` : '<div class="slot">Jar ' + (i + 1) + '</div>')].join('');
   return `<div class="view wrap" style="padding-top:40px"><p class="eyebrow">Build your box</p><h2>Your box, your rules.</h2>
 <div class="byb" style="margin-top:32px"><div>
-<h3>1. The bread</h3><div class="picks"><div class="pick">${loaf()}<div><b>Dark Rye Sourdough</b><div class="small">2 lb round · ${money(by('rye').price)}</div></div><div class="qty"><button data-bb="-1" aria-label="Remove bread">−</button><span>${bx.bread}</span><button data-bb="1" aria-label="Add bread">+</button></div></div></div>
+<h3>1. The bread <span class="small" style="font-family:Archivo,sans-serif;text-transform:none">up to ${MAX_BOX_BREADS} loaves</span></h3><div class="picks">${br.map(p => `<div class="pick">${loaf(p)}<div><b>${p.name}</b><div class="small">30 oz · ${money(p.price)}</div></div><div class="qty"><button data-bb="${p.id}" data-d="-1" aria-label="Remove ${p.word}">−</button><span>${bx.breads[p.id]}</span><button data-bb="${p.id}" data-d="1" aria-label="Add ${p.word}">+</button></div></div>`).join('')}</div>
+${nb > 1 ? `<p class="small" style="margin:-18px 0 24px">${nb} loaves in this box.</p>` : ''}
 <h3>2. Three spreads <span class="small" style="font-family:Archivo,sans-serif;text-transform:none">${n} of 3 picked</span></h3><div class="picks">${sp.map(p => `<div class="pick">${jar(p)}<div><b>${p.name}</b><div class="small">8 oz · ${money(p.price)}</div></div><div class="qty"><button data-bs="${p.id}" data-d="-1" aria-label="Remove ${p.word}">−</button><span>${bx.spreads[p.id]}</span><button data-bs="${p.id}" data-d="1" aria-label="Add ${p.word}">+</button></div></div>`).join('')}</div>
 </div>
 <div class="summary"><h3>In your box</h3><div class="slots">${slots}</div><div class="tot"><span>Total</span><span>${money(total)}</span></div><p class="small" style="color:var(--pist)">Spreads ship chilled. Shipping is calculated at checkout.</p><button class="btn light" id="boxAdd" ${n === 3 ? '' : 'disabled'}>${n === 3 ? 'Add box to cart' : 'Pick ' + (3 - n) + ' more'}</button></div></div></div>` }
@@ -126,8 +131,8 @@ function rerender(html) { const y = window.scrollY; $('#app').innerHTML = html; 
 function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('show'), 2600) }
 function add(id, q = 1) { cart[id] = Math.min(SITE.maxQtyPerItem, (cart[id] || 0) + q); saveCart(); drawCart(); const b = $('#cartBtn'); b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump') }
 function drawCart() { const ids = Object.keys(cart), n = cartCount(); $('#count').textContent = n;
-  const hasBread = cart.rye || cart.box, hasSpread = ids.some(i => by(i).cat !== 'bread');
-  let up = ''; if (n && !hasBread) up = `<div class="upsell"><span><b>No bread yet?</b><br><span class="small">Dark Rye Sourdough, ${money(by('rye').price)}</span></span><button class="btn" data-add="rye" style="min-height:44px;padding:8px 16px">Add</button></div>`;
+  const hasBread = ids.some(i => by(i).cat === 'bread' || i === 'box'), hasSpread = ids.some(i => by(i).cat !== 'bread');
+  let up = ''; if (n && !hasBread) up = `<div class="upsell"><span><b>No bread yet?</b><br><span class="small">${by('rye').name}, ${money(by('rye').price)}</span></span><button class="btn" data-add="rye" style="min-height:44px;padding:8px 16px">Add</button></div>`;
   else if (n && !hasSpread) up = `<div class="upsell"><span><b>This loaf wants a schmear.</b><br><span class="small">Spinach &amp; Walnut, ${money(by('spinach').price)}</span></span><button class="btn" data-add="spinach" style="min-height:44px;padding:8px 16px">Add</button></div>`;
   $('#cartItems').innerHTML = n ? orderLines() + up : '<p style="padding:28px 0">Nothing here yet. Bread is lonely without a schmear.</p>';
   $('#cartFt').innerHTML = n ? `<div class="tot"><span>Subtotal</span><span>${money(cartSub())}</span></div><p class="small">Shipping is calculated at checkout.</p><a class="btn" href="#checkout" id="toCo">Checkout</a>` : `<a class="btn" href="#shop-all" id="toCo">Go to shop</a>` }
@@ -156,9 +161,9 @@ document.addEventListener('click', e => { const t = e.target.closest('button,a')
   if (t.dataset.add) { const q = t.dataset.usepq ? +$('#pq').textContent : 1; add(t.dataset.add, q); if (!t.closest('.upsell')) { const old = t.textContent; t.textContent = 'Schmeared in'; t.classList.add('added'); setTimeout(() => { t.textContent = old; t.classList.remove('added') }, 1100) } return }
   if (t.dataset.pq) { const s = $('#pq'); s.textContent = Math.min(SITE.maxQtyPerItem, Math.max(1, +s.textContent + +t.dataset.pq)); return }
   if (t.dataset.cq) { const id = t.dataset.cq; cart[id] = Math.min(SITE.maxQtyPerItem, cart[id] + +t.dataset.d); if (cart[id] <= 0) delete cart[id]; saveCart(); drawCart(); if (location.hash === '#checkout') rerender(checkout()); return }
-  if (t.dataset.bb) { bx.bread = Math.min(2, Math.max(0, bx.bread + +t.dataset.bb)); return rerender(box()) }
+  if (t.dataset.bb) { const d = +t.dataset.d, id = t.dataset.bb; if (d > 0 && sum(bx.breads) >= MAX_BOX_BREADS) return toast(`Up to ${MAX_BOX_BREADS} loaves per box.`); bx.breads[id] = Math.max(0, bx.breads[id] + d); return rerender(box()) }
   if (t.dataset.bs) { const d = +t.dataset.d, id = t.dataset.bs; if (d > 0 && bxCount() >= 3) return toast('Three jars per box. Remove one to swap.'); bx.spreads[id] = Math.max(0, bx.spreads[id] + d); return rerender(box()) }
-  if (t.id === 'boxAdd') { if (bx.bread) add('rye', bx.bread); Object.keys(bx.spreads).forEach(i => bx.spreads[i] && add(i, bx.spreads[i])); bx.spreads = { spinach: 0, eggplant: 0, greenbean: 0 }; rerender(box()); toast('Your box is in the cart'); return openCart(true) }
+  if (t.id === 'boxAdd') { for (const g of [bx.breads, bx.spreads]) for (const [i, q] of Object.entries(g)) if (q) add(i, q); bx = emptyBox(); rerender(box()); toast('Your box is in the cart'); return openCart(true) }
   if (t.id === 'zipBtn') { const z = $('#zip').value.trim(); zipMsg = /^\d{5}$/.test(z) ? `<div class="msg">We ship within the US. Chilled delivery to ${z}: <span class="ph">[DELIVERY ZONES TO CONFIRM]</span>. Final shipping options appear on the payment page.</div>` : `<div class="msg">Enter a 5 digit ZIP code.</div>`; $('#zipOut').innerHTML = zipMsg; return }
 });
 $('#scrim').addEventListener('click', () => openCart(false));
