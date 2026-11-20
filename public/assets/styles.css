@@ -194,3 +194,49 @@ footer.site .flinks a:hover{border-color:var(--tom)}
 .brand{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:8px 0}
 .byline{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--rye);line-height:1;padding-left:3px}
 @media(max-width:480px){.byline{font-size:10px;letter-spacing:.12em}}
+
+/* ---------- Our Collection (pre-launch gallery) ---------- */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.soon{display:inline-flex;align-items:center;gap:10px;padding:8px 14px;border-radius:999px;background:rgba(245,235,221,.94);color:var(--green);border:1px solid rgba(37,55,45,.28);font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;line-height:1;white-space:nowrap}
+.soon::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--tom)}
+.soonrow{margin-top:auto;padding-top:6px;border-top:1px solid var(--line);display:flex;justify-content:center;padding:14px 0 2px}
+.soonrow .soon{background:transparent}
+.prelaunch{display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+
+.collection{background:#F8F1E6;border-bottom:1px solid var(--line)}
+.cintro{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(32px,6vw,88px);align-items:center}
+.ctext{display:flex;flex-direction:column;align-items:flex-start;gap:20px}
+.collection h2{font-size:clamp(46px,6.4vw,92px)}
+.clead{font-size:clamp(19px,1.8vw,23px);font-weight:500;color:var(--rye);max-width:30ch;line-height:1.45}
+.cline{display:flex;align-items:center;gap:14px;font-family:'Anton','Impact',sans-serif;font-size:22px;letter-spacing:.18em;text-transform:uppercase;color:var(--tom)}
+.cline::after{content:"";width:56px;height:2px;background:currentColor}
+.cfeature{margin:0;border-radius:22px;overflow:hidden;background:#1d1714;box-shadow:0 30px 60px -30px rgba(31,21,18,.55)}
+.cfeature img{display:block;width:100%;height:auto}
+.ctabs{display:flex;flex-wrap:wrap;gap:10px;margin:clamp(56px,7vw,96px) 0 8px}
+.ctabs .chip{cursor:pointer}
+.cgroup{margin-top:clamp(36px,5vw,56px)}
+.cgroup[hidden]{display:none}
+.ghead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;padding-bottom:16px;margin-bottom:clamp(20px,3vw,32px);border-bottom:2px solid var(--green)}
+.ghead h3{font-size:clamp(28px,3.4vw,42px)}
+.ghead p{color:var(--rye);font-size:16px;max-width:46ch}
+.cgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(20px,2.6vw,36px)}
+.ccard{display:flex;flex-direction:column;background:#FBF6EE;border:1.5px solid rgba(37,55,45,.18);border-radius:20px;overflow:hidden;transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s}
+.ccard:hover{transform:translateY(-4px);box-shadow:0 22px 40px -26px rgba(31,21,18,.45)}
+.cmedia{position:relative;display:block;aspect-ratio:1/1;overflow:hidden}
+.cmedia img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s}
+.ccard:hover .cmedia img{transform:scale(1.04)}
+.cmedia>.soon{position:absolute;top:16px;left:16px;backdrop-filter:blur(6px)}
+.cph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.cph svg{width:58%;height:auto;max-height:66%;transition:transform .5s}
+.ccard:hover .cph svg{transform:rotate(-3deg) scale(1.03)}
+.cphnote{position:absolute;left:0;right:0;bottom:14px;text-align:center;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:rgba(51,37,31,.55)}
+.cbody{display:flex;flex-direction:column;gap:10px;padding:22px 24px 24px;flex:1}
+.cbody h4{margin:0;font-family:'Anton','Impact',sans-serif;font-weight:400;font-size:clamp(24px,2vw,28px);line-height:1.02;text-transform:uppercase}
+.cbody h4 a{text-decoration:none}
+.cbody h4 a:hover{color:var(--tom)}
+.cbody p{color:var(--rye);font-size:16px}
+.cmeta{margin-top:auto!important;padding-top:14px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;font-weight:700;color:var(--green)!important}
+.cmeta span:last-child{font-family:'Anton','Impact',sans-serif;font-weight:400;font-size:24px}
+@media(max-width:980px){.cgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:900px){.cintro{grid-template-columns:1fr}.cfeature{max-width:560px}}
+@media(max-width:600px){.cgrid{grid-template-columns:1fr}.cbody{padding:20px}}

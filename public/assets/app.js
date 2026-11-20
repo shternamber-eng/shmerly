@@ -3,14 +3,16 @@ import { PRODUCTS as P, SITE, byId as by } from './catalog.js';
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 // "[SOMETHING]" in catalog text → visible dashed placeholder until the owner fills it in.
 const ph = t => String(t).replace(/\[([^\]]+)\]/g, '<span class="ph">[$1]</span>');
-const money = c => '$' + (c / 100).toFixed(2);
+const money = c => c == null ? '' : '$' + (c / 100).toFixed(2);
+const LIVE = SITE.launched; // false = pre-launch: "Coming Soon" everywhere, no cart / checkout
+const SOON = '<span class="soon">Coming Soon</span>';
 
 /* ---------- cart (remembered in this browser) ---------- */
 const CART_KEY = 'schmearly-cart-v1';
 const cart = {};
-try {
+if (LIVE) try {
   const saved = JSON.parse(localStorage.getItem(CART_KEY) || '{}');
-  for (const [id, q] of Object.entries(saved)) if (by(id) && Number.isInteger(q) && q > 0) cart[id] = Math.min(q, SITE.maxQtyPerItem);
+  for (const [id, q] of Object.entries(saved)) if (by(id)?.price != null && Number.isInteger(q) && q > 0) cart[id] = Math.min(q, SITE.maxQtyPerItem);
 } catch { /* storage unavailable: start empty */ }
 const saveCart = () => { try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch { } };
 const cartCount = () => Object.values(cart).reduce((a, b) => a + b, 0);
@@ -18,14 +20,38 @@ const cartSub = () => Object.keys(cart).reduce((a, i) => a + by(i).price * cart[
 
 /* ---------- illustrations ---------- */
 function slice(c, anim) { return `<svg viewBox="0 0 640 430" role="img" aria-label="Slice of dark rye with a knife spreading pkhali"><path d="M56 398 L56 196 C56 92 148 36 260 36 C372 36 464 92 464 196 L464 398 Z" fill="#1F1512"/><path d="M78 380 L78 200 C78 110 160 60 260 60 C360 60 442 110 442 200 L442 380 Z" fill="#4A352B"/><circle cx="130" cy="150" r="7" fill="#33251F"/><circle cx="210" cy="110" r="5" fill="#33251F"/><circle cx="330" cy="120" r="8" fill="#33251F"/><circle cx="120" cy="330" r="6" fill="#33251F"/><circle cx="220" cy="350" r="8" fill="#33251F"/><circle cx="410" cy="330" r="7" fill="#33251F"/><path ${anim ? 'class="smear" pathLength="100"' : ''} d="M128 262 C170 176 232 318 292 232 S398 190 404 268" fill="none" stroke="${c}" stroke-width="84" stroke-linecap="round"/><g transform="translate(372 236) rotate(-32)"><rect x="0" y="-16" width="176" height="32" rx="16" fill="#F5EBDD"/><rect x="164" y="-13" width="112" height="26" rx="13" fill="#25372D"/></g></svg>` }
-function jar(p) { const w = p.word.toUpperCase(); return `<svg viewBox="0 0 200 240" role="img" aria-label="${p.name} jar"><rect x="45" y="6" width="110" height="28" rx="6" fill="#D44D3E"/><rect x="18" y="34" width="164" height="200" rx="26" fill="${p.color}"/><rect x="18" y="76" width="164" height="118" fill="#F5EBDD"/><path d="M34 98 C60 86 84 108 112 96 S150 90 166 98" fill="none" stroke="${p.color}" stroke-width="13" stroke-linecap="round"/><text x="30" y="${w.length > 8 ? 140 : 144}" font-family="Anton,Impact,sans-serif" font-size="${w.length > 8 ? 25 : 31}" fill="#25372D">${w}</text><text x="30" y="160" font-family="Archivo,Arial,sans-serif" font-weight="700" font-size="9.5" letter-spacing=".6" fill="#25372D">&amp; WALNUT PKHALI</text><text x="30" y="183" font-family="Anton,Impact,sans-serif" font-size="11" fill="#25372D">SCHMEARLY · 8 OZ</text></svg>` }
+function jar(p) { const w = p.word.toUpperCase(); return `<svg viewBox="0 0 200 240" role="img" aria-label="${p.name} jar"><rect x="45" y="6" width="110" height="28" rx="6" fill="#D44D3E"/><rect x="18" y="34" width="164" height="200" rx="26" fill="${p.color}"/><rect x="18" y="76" width="164" height="118" fill="#F5EBDD"/><path d="M34 98 C60 86 84 108 112 96 S150 90 166 98" fill="none" stroke="${p.color}" stroke-width="13" stroke-linecap="round"/><text x="30" y="${w.length > 8 ? 140 : 144}" font-family="Anton,Impact,sans-serif" font-size="${w.length > 8 ? 25 : 31}" fill="#25372D">${w}</text><text x="30" y="160" font-family="Archivo,Arial,sans-serif" font-weight="700" font-size="9.5" letter-spacing=".6" fill="#25372D">&amp; WALNUT SPREAD</text><text x="30" y="183" font-family="Anton,Impact,sans-serif" font-size="11" fill="#25372D">SCHMEARLY</text></svg>` }
 function loaf(p = by('rye')) { const olives = p.olives ? '<g fill="#2A1E2E"><ellipse cx="140" cy="100" rx="11" ry="8"/><ellipse cx="300" cy="120" rx="10" ry="7"/><ellipse cx="200" cy="330" rx="11" ry="8"/><ellipse cx="330" cy="350" rx="9" ry="7"/><ellipse cx="110" cy="320" rx="9" ry="7"/></g><g stroke="#7E9460" stroke-width="5" stroke-linecap="round"><path d="M250 80 l18 -10 M90 140 l16 8 M270 370 l18 -6"/></g>' : '';
   return `<svg viewBox="-20 0 480 440" role="img" aria-label="${p.name} loaf with paper band"><circle cx="220" cy="220" r="216" fill="${p.crust}"/><circle cx="220" cy="220" r="196" fill="${p.crumb}"/><path d="M90 120 C150 90 210 90 260 110 M70 190 C150 150 260 150 350 190 M80 330 C160 300 270 300 360 330 M150 380 C200 365 250 365 300 380" fill="none" stroke="rgba(245,235,221,.18)" stroke-width="7" stroke-linecap="round"/>${olives}<g transform="rotate(-4 220 220)"><rect x="-16" y="160" width="330" height="120" fill="#D44D3E"/><rect x="314" y="160" width="142" height="120" fill="#F5EBDD"/><text x="6" y="214" font-family="Anton,Impact,sans-serif" font-size="46" fill="#F5EBDD">${p.band}</text><text x="6" y="262" font-family="Anton,Impact,sans-serif" font-size="46" fill="#1F1512">SCHMEAR IT.</text><text x="326" y="212" font-family="Anton,Impact,sans-serif" font-size="21" fill="#25372D">SCHMEARLY</text><text x="326" y="238" font-family="Archivo,Arial,sans-serif" font-weight="700" font-size="13" fill="#25372D">NET WT 30 OZ</text></g></svg>` }
 function boxArt() { return `<svg viewBox="0 0 300 240" role="img" aria-label="Schmear box"><rect x="10" y="60" width="280" height="170" rx="14" fill="#D44D3E"/><rect x="10" y="60" width="280" height="40" rx="14" fill="#1F1512"/><circle cx="90" cy="150" r="52" fill="#33251F"/><rect x="160" y="108" width="34" height="84" rx="9" fill="#7E9460"/><rect x="200" y="108" width="34" height="84" rx="9" fill="#6B4660"/><rect x="240" y="108" width="34" height="84" rx="9" fill="#A9B97F"/><text x="24" y="88" font-family="Anton,Impact,sans-serif" font-size="22" fill="#F5EBDD">BETTER TOGETHER</text></svg>` }
 const art = p => p.cat === 'bread' ? loaf(p) : p.id === 'box' ? boxArt() : jar(p);
 
 /* ---------- views ---------- */
-function card(p) { return `<article class="pcard"><a class="art" href="#product-${p.id}" style="background:${p.bg}" aria-label="${p.name}">${art(p)}</a><h3><a href="#product-${p.id}">${p.name}</a></h3><p class="small">${p.short}</p><div class="meta"><span>${p.size}</span><span>${money(p.price)}</span></div><button class="btn" data-add="${p.id}">Add to cart</button></article>` }
+function card(p) { const buy = LIVE && p.price != null; return `<article class="pcard"><a class="art" href="#product-${p.id}" style="background:${p.bg}" aria-label="${p.name}">${art(p)}</a><h3><a href="#product-${p.id}">${p.name}</a></h3><p class="small">${p.short}</p>${p.size || p.price != null ? `<div class="meta"><span>${p.size || ''}</span><span>${money(p.price)}</span></div>` : ''}${buy ? `<button class="btn" data-add="${p.id}">Add to cart</button>` : `<div class="soonrow">${SOON}</div>`}</article>` }
+
+/* ---------- Our Collection gallery ---------- */
+const COLLECTION = [
+  { key: 'bread', title: 'Artisan Sourdough Bread', note: 'Naturally leavened, 30 oz (850 g) loaves.' },
+  { key: 'spreads', title: 'Gourmet Spreads', note: 'Vegetable spreads inspired by Georgian cuisine, created to go with our bread.' },
+];
+let colFilter = 'all';
+function cmedia(p) {
+  // Real product photo when one exists; otherwise an honest placeholder: the brand illustration + "Photo coming soon".
+  return p.photo
+    ? `<img src="${p.photo}" alt="${p.name}" loading="lazy" decoding="async" width="800" height="800">`
+    : `<div class="cph" style="background:${p.bg}">${art(p)}<span class="cphnote">Photo coming soon</span></div>`;
+}
+function ccard(p) { return `<article class="ccard"><a class="cmedia" href="#product-${p.id}" tabindex="-1" aria-hidden="true">${cmedia(p)}${SOON}</a>
+<div class="cbody"><h4><a href="#product-${p.id}">${p.name}</a></h4><span class="sr-only">Coming soon.</span><p>${p.short}</p>${p.price != null ? `<p class="cmeta"><span>${p.size}</span><span>${money(p.price)}</span></p>` : ''}</div></article>` }
+function collection() { return `<section class="collection" id="collection" aria-labelledby="col-h"><div class="wrap">
+<div class="cintro"><div class="ctext"><p class="eyebrow">Our Collection</p><h2 id="col-h">Something Good Is Rising.</h2>
+<p class="clead">Naturally leavened artisan bread. Thoughtfully crafted gourmet spreads. Made to be enjoyed together.</p>
+<p class="cline">Coming Soon.</p><a class="btn ghost" href="#news">Notify me at launch</a></div>
+<figure class="cfeature"><picture><source type="image/webp" srcset="/img/schmearly-dark-rye-720.webp 720w, /img/schmearly-dark-rye-1200.webp 1199w" sizes="(max-width: 900px) 100vw, 46vw"><img src="/img/schmearly-dark-rye-720.webp" alt="SCHMEARLY: Artisan Bread &amp; Spreads. A dark rye sourdough loaf with a crackled, flour-dusted crust on a linen towel." width="1199" height="1312" loading="lazy" decoding="async"></picture></figure></div>
+<div class="ctabs" role="group" aria-label="Show products">${[['all', 'All Collection'], ['bread', 'Bread'], ['spreads', 'Spreads']].map(([k, l]) => `<button type="button" class="chip${colFilter === k ? ' on' : ''}" data-col="${k}" aria-pressed="${colFilter === k}">${l}</button>`).join('')}</div>
+${COLLECTION.map(g => `<div class="cgroup" data-group="${g.key}"${colFilter !== 'all' && colFilter !== g.key ? ' hidden' : ''}><div class="ghead"><h3>${g.title}</h3><p>${g.note}</p></div><div class="cgrid">${P.filter(p => p.cat === g.key).map(ccard).join('')}</div></div>`).join('')}
+</div></section>` }
+function setCollection(k) { colFilter = k; $$('[data-col]').forEach(b => { const on = b.dataset.col === k; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on) }); $$('.cgroup').forEach(g => { g.hidden = k !== 'all' && g.dataset.group !== k }) }
 
 function home() { return `<div class="view">
 <section class="hero"><div class="wrap grid">
@@ -34,18 +60,19 @@ function home() { return `<div class="view">
 <div class="cta"><a class="btn" href="#shop-spreads">Shop the spreads</a><a class="btn ghost" href="#shop-bread">Discover our bread</a></div></div>
 <div><div class="plate">${slice('#D44D3E', true)}</div></div>
 </div>
-<div class="ticker" aria-hidden="true"><div>${'Dark rye · Red whole wheat · Kalamata olive &amp; rosemary · Spinach &amp; walnut · Eggplant &amp; walnut · Green bean &amp; walnut · <b>Better together</b> · '.repeat(6)}</div></div>
+<div class="ticker" aria-hidden="true"><div>${'Dark rye · Red whole wheat · White whole wheat · Olive &amp; rosemary · Spinach &amp; walnut · Eggplant &amp; walnut · Green bean &amp; walnut · <b>Better together</b> · '.repeat(6)}</div></div>
 </section>
+${collection()}
 <section class="pair"><div class="wrap"><p class="eyebrow">The Perfect Pair</p><h2>Better together.</h2>
 <div class="grid">
-<div class="card"><div class="art">${loaf()}</div><h3>The bread</h3><p>Organic sourdough on natural starter, no commercial yeast. Dense, a little sour, built to carry a thick layer.</p><a class="btn ghost" href="#shop-bread">See the loaves</a></div>
+<div class="card"><div class="art">${loaf()}</div><h3>The bread</h3><p>Sourdough on natural starter, no commercial yeast. Dense, a little sour, built to carry a thick layer.</p><a class="btn ghost" href="#shop-bread">See the loaves</a></div>
 <div class="plus" aria-hidden="true">+</div>
 <div class="card"><div class="art">${jar(by('spinach'))}</div><h3>The schmear</h3><p>Pkhali: vegetables, walnuts and herbs ground into a bright, spoonable spread.</p><a class="btn ghost" href="#shop-spreads">Meet the spreads</a></div>
 </div></div></section>
 <section><div class="wrap"><p class="eyebrow">Shop by craving</p><h2>What are you hungry for?</h2>
 <div class="tiles">
-<a class="tile t1" href="#shop-bread"><div class="art">${loaf()}</div><div><h3>Bread</h3><p>Three organic sourdoughs, 30 oz</p></div></a>
-<a class="tile t2" href="#shop-spreads"><div class="art">${jar(by('eggplant'))}</div><div><h3>Spreads</h3><p>Three pkhali, 8 oz jars</p></div></a>
+<a class="tile t1" href="#shop-bread"><div class="art">${loaf()}</div><div><h3>Bread</h3><p>Four sourdoughs, 30 oz loaves</p></div></a>
+<a class="tile t2" href="#shop-spreads"><div class="art">${jar(by('eggplant'))}</div><div><h3>Spreads</h3><p>Three vegetable &amp; walnut spreads</p></div></a>
 <a class="tile t3" href="#shop-sets"><div class="art">${boxArt()}</div><div><h3>Sets</h3><p>Bread and spread, boxed</p></div></a>
 </div></div></section>
 <section style="padding-top:0"><div class="wrap"><p class="eyebrow">Meet the schmears</p><h2>Three jars. Three moods.</h2>
@@ -54,7 +81,7 @@ function home() { return `<div class="view">
 </div></div></section>
 <section class="craft" id="craft"><div class="wrap"><p class="eyebrow">The Craft</p><h2>Made the slow way.</h2>
 <div class="cols">
-<div><h3>Sourdough</h3><p>Organic grain and natural starter, no commercial yeast. Good bread takes its time, so we give it time.</p></div>
+<div><h3>Sourdough</h3><p>Natural starter, no commercial yeast. Good bread takes its time, so we give it time.</p></div>
 <div><h3>Vegetables</h3><p>Spinach, eggplant, green beans. The vegetable is the main ingredient, not the garnish.</p></div>
 <div><h3>Walnuts</h3><p>Ground into every pkhali for body and a round, toasty depth.</p></div>
 <div><h3>Recipes</h3><p>Pkhali comes from the Georgian table. We kept the method and made it jar-ready.</p></div>
@@ -74,9 +101,10 @@ function shop(cat) { const list = P.filter(p => cat === 'all' || p.cat === cat);
 function pdp(p) { return `<div class="view wrap"><div class="pdp">
 <div class="gallery" style="background:${p.bg}">${art(p)}</div>
 <div class="info"><p class="eyebrow"><a href="#shop-${p.cat}">${CATS[p.cat]}</a></p><h1>${p.name}</h1><p style="font-size:21px;font-weight:500">${p.short}</p>
-<div class="price">${money(p.price)}</div>
-<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><div class="qty"><button data-pq="-1" aria-label="Decrease quantity">−</button><span id="pq">1</span><button data-pq="1" aria-label="Increase quantity">+</button></div><button class="btn" style="flex:1 1 200px" data-add="${p.id}" data-usepq="1">Add to cart</button></div>
-<dl><div><dt>Size</dt><dd>${p.size}</dd></div><div><dt>Ingredients</dt><dd>${ph(p.ingredients)}</dd></div><div><dt>Allergens</dt><dd>${ph(p.allergens)}</dd></div><div><dt>Kosher</dt><dd>Certified by ${ph(SITE.kosherAgency)}</dd></div><div><dt>Storage</dt><dd>${ph(p.storage)}</dd></div><div><dt>Shelf life</dt><dd>${ph(p.shelfLife)}</dd></div></dl>
+${p.price != null ? `<div class="price">${money(p.price)}</div>` : ''}
+${LIVE && p.price != null ? `<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><div class="qty"><button data-pq="-1" aria-label="Decrease quantity">−</button><span id="pq">1</span><button data-pq="1" aria-label="Increase quantity">+</button></div><button class="btn" style="flex:1 1 200px" data-add="${p.id}" data-usepq="1">Add to cart</button></div>`
+  : `<div class="prelaunch">${SOON}<a class="btn ghost" href="#news">Notify me at launch</a></div>`}
+<dl>${p.size ? `<div><dt>Size</dt><dd>${p.size}</dd></div>` : ''}<div><dt>Ingredients</dt><dd>${ph(p.ingredients)}</dd></div><div><dt>Allergens</dt><dd>${ph(p.allergens)}</dd></div><div><dt>Kosher</dt><dd>Certified by ${ph(SITE.kosherAgency)}</dd></div><div><dt>Storage</dt><dd>${ph(p.storage)}</dd></div><div><dt>Shelf life</dt><dd>${ph(p.shelfLife)}</dd></div></dl>
 </div></div>
 ${p.cat === 'bread' ? `<a href="#story" class="maker"><img src="founder.jpg" alt="Illustrated portrait of the Schmearly baker" loading="lazy"><span><span class="eyebrow" style="color:var(--pist)">The baker</span><b>Milled, mixed and baked by Uriel Shtern.</b><span>Read our story</span></span></a>` : ''}
 <div style="padding-bottom:80px"><p class="eyebrow">${p.cat === 'bread' ? 'This loaf wants a schmear' : 'Goes best with'}</p><h2 style="font-size:clamp(36px,5vw,64px)">Better together.</h2><div class="cards">${p.pair.map(i => card(by(i))).join('')}</div></div></div>` }
@@ -86,7 +114,9 @@ const emptyBox = () => ({ breads: Object.fromEntries(P.filter(p => p.cat === 'br
 let bx = emptyBox();
 const sum = o => Object.values(o).reduce((a, b) => a + b, 0);
 const bxCount = () => sum(bx.spreads);
-function box() { const sp = P.filter(p => p.cat === 'spreads'), br = P.filter(p => p.cat === 'bread'), n = bxCount(), nb = sum(bx.breads);
+function prelaunchView(eyebrow, title) { return `<div class="view wrap" style="padding:80px 0;min-height:60vh"><p class="eyebrow">${eyebrow}</p><h2>${title}</h2><p style="margin:16px 0 8px;font-size:20px;max-width:560px">Our bread and spreads are getting ready for launch. Orders open soon.</p><p style="margin-bottom:28px">${SOON}</p><div class="cta"><a class="btn" href="#collection">See the collection</a><a class="btn ghost" href="#news">Notify me at launch</a></div></div>` }
+function box() { if (!LIVE) return prelaunchView('Build your box', 'Your box, your rules.');
+  const sp = P.filter(p => p.cat === 'spreads'), br = P.filter(p => p.cat === 'bread'), n = bxCount(), nb = sum(bx.breads);
   const picked = sp.flatMap(p => Array(bx.spreads[p.id]).fill(p)), loaves = br.flatMap(p => Array(bx.breads[p.id]).fill(p));
   const total = [...loaves, ...picked].reduce((a, p) => a + p.price, 0);
   const slots = [loaves[0] ? `<div class="slot full">${loaf(loaves[0])}</div>` : '<div class="slot">No bread</div>', ...[0, 1, 2].map(i => picked[i] ? `<div class="slot full">${jar(picked[i])}</div>` : '<div class="slot">Jar ' + (i + 1) + '</div>')].join('');
@@ -100,7 +130,8 @@ ${nb > 1 ? `<p class="small" style="margin:-18px 0 24px">${nb} loaves in this bo
 
 let zipMsg = '';
 function orderLines() { return Object.keys(cart).map(i => { const p = by(i); return `<div class="line">${art(p)}<div><b>${p.name}</b><div class="small">${money(p.price)} · ${p.size}</div></div><div class="qty"><button data-cq="${i}" data-d="-1" aria-label="Decrease ${p.name}">−</button><span>${cart[i]}</span><button data-cq="${i}" data-d="1" aria-label="Increase ${p.name}">+</button></div></div>` }).join('') }
-function checkout() { if (!cartCount()) return `<div class="view wrap" style="padding:80px 0;min-height:60vh"><h2>Your cart is empty.</h2><p style="margin:16px 0 24px">Start with a jar or build a box.</p><a class="btn" href="#shop-all">Go to shop</a></div>`;
+function checkout() { if (!LIVE) return prelaunchView('Checkout', 'Almost ready.');
+  if (!cartCount()) return `<div class="view wrap" style="padding:80px 0;min-height:60vh"><h2>Your cart is empty.</h2><p style="margin:16px 0 24px">Start with a jar or build a box.</p><a class="btn" href="#shop-all">Go to shop</a></div>`;
   return `<div class="view wrap" style="padding-top:40px"><p class="eyebrow">Checkout</p><h2>Almost yours.</h2>
 <div class="co" style="margin-top:32px"><div>
 <fieldset><legend>Your order</legend><div>${orderLines()}</div></fieldset>
@@ -118,19 +149,19 @@ function route() { const h = (location.hash || '#home').slice(1); let html, anch
   else if (h === 'box') html = box();
   else if (h === 'checkout') html = checkout();
   else if (h === 'thanks') html = thanks();
-  else { html = home(); if (['craft', 'kosher', 'story', 'news'].includes(h)) anchor = h }
+  else { html = home(); if (['collection', 'craft', 'kosher', 'story', 'news'].includes(h)) anchor = h }
   $('#app').innerHTML = html; $('#nav').classList.remove('open'); $('#menuBtn').setAttribute('aria-expanded', 'false');
   $$('#nav a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + h));
   const prod = h.startsWith('product-') && by(h.slice(8));
   const page = prod ? prod.name : h.startsWith('shop-') ? CATS[h.slice(5)] : { box: 'Build Your Box', checkout: 'Checkout', thanks: 'Thank you' }[h];
-  document.title = page ? `${page} · Schmearly` : 'Schmearly · Dark rye sourdough & pkhali spreads';
+  document.title = page ? `${page} · Schmearly` : 'Schmearly · Artisan sourdough bread & gourmet spreads';
   if (anchor) { const e = document.getElementById(anchor); e && e.scrollIntoView() } else window.scrollTo(0, 0) }
 function rerender(html) { const y = window.scrollY; $('#app').innerHTML = html; const v = $('.view'); v && (v.style.animation = 'none'); window.scrollTo(0, y) }
 
 /* ---------- cart UI ---------- */
 function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('show'), 2600) }
 function add(id, q = 1) { cart[id] = Math.min(SITE.maxQtyPerItem, (cart[id] || 0) + q); saveCart(); drawCart(); const b = $('#cartBtn'); b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump') }
-function drawCart() { const ids = Object.keys(cart), n = cartCount(); $('#count').textContent = n;
+function drawCart() { if (!LIVE) return; const ids = Object.keys(cart), n = cartCount(); $('#count').textContent = n;
   const hasBread = ids.some(i => by(i).cat === 'bread' || i === 'box'), hasSpread = ids.some(i => by(i).cat !== 'bread');
   let up = ''; if (n && !hasBread) up = `<div class="upsell"><span><b>No bread yet?</b><br><span class="small">${by('rye').name}, ${money(by('rye').price)}</span></span><button class="btn" data-add="rye" style="min-height:44px;padding:8px 16px">Add</button></div>`;
   else if (n && !hasSpread) up = `<div class="upsell"><span><b>This loaf wants a schmear.</b><br><span class="small">Spinach &amp; Walnut, ${money(by('spinach').price)}</span></span><button class="btn" data-add="spinach" style="min-height:44px;padding:8px 16px">Add</button></div>`;
@@ -156,6 +187,8 @@ document.addEventListener('click', e => { const t = e.target.closest('button,a')
   if (t.id === 'cartBtn') return openCart(true);
   if (t.id === 'cartClose') return openCart(false);
   if (t.id === 'toCo') return openCart(false);
+  if (t.dataset.col) return setCollection(t.dataset.col);
+  if (!LIVE && (t.dataset.add || t.id === 'payBtn' || t.id === 'boxAdd')) return;
   if (t.id === 'payBtn') return pay(t);
   if (t.id === 'menuBtn') { const o = $('#nav').classList.toggle('open'); t.setAttribute('aria-expanded', o); return }
   if (t.dataset.add) { const q = t.dataset.usepq ? +$('#pq').textContent : 1; add(t.dataset.add, q); if (!t.closest('.upsell')) { const old = t.textContent; t.textContent = 'Schmeared in'; t.classList.add('added'); setTimeout(() => { t.textContent = old; t.classList.remove('added') }, 1100) } return }
@@ -180,5 +213,6 @@ if (qs.get('order') === 'success') {
   history.replaceState(null, '', location.pathname + '#thanks');
 }
 $('#cart').inert = true;
+if (!LIVE) $('#cartBtn').outerHTML = '<a class="btn cartbtn" href="#news">Notify me</a>';
 $('#year').textContent = new Date().getFullYear();
 drawCart(); route();

@@ -19,6 +19,9 @@ export const methodNotAllowed = () => json({ error: 'Method not allowed.' }, 405
 export const notFound = () => json({ error: 'Not found.' }, 404);
 
 export async function handleCheckout(request, env) {
+  if (!SITE.launched) {
+    return json({ error: 'Coming soon. Orders open at launch.' }, 403);
+  }
   if (!env.STRIPE_SECRET_KEY) {
     return json({ error: 'Online payment is not set up yet. Please try again later.' }, 503);
   }
@@ -35,7 +38,7 @@ export async function handleCheckout(request, env) {
   for (const it of items) {
     const p = PRODUCTS.find(x => x.id === it?.id);
     const qty = Number.parseInt(it?.qty, 10);
-    if (!p || !Number.isInteger(qty) || qty < 1 || qty > SITE.maxQtyPerItem) {
+    if (!p || !Number.isInteger(p.price) || !Number.isInteger(qty) || qty < 1 || qty > SITE.maxQtyPerItem) {
       return json({ error: 'Your cart has an item we could not recognize. Please refresh and try again.' }, 400);
     }
     lines.push({ p, qty });
@@ -55,7 +58,7 @@ export async function handleCheckout(request, env) {
     f.set(`line_items[${i}][price_data][currency]`, CURRENCY);
     f.set(`line_items[${i}][price_data][unit_amount]`, String(p.price));
     f.set(`line_items[${i}][price_data][product_data][name]`, p.name);
-    f.set(`line_items[${i}][price_data][product_data][description]`, p.size);
+    if (p.size) f.set(`line_items[${i}][price_data][product_data][description]`, p.size);
     f.set(`line_items[${i}][price_data][product_data][metadata][product_id]`, p.id);
   });
   f.set('metadata[source]', 'schmearly-site');
