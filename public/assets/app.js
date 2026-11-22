@@ -6,6 +6,16 @@ const ph = t => String(t).replace(/\[([^\]]+)\]/g, '<span class="ph">[$1]</span>
 const money = c => c == null ? '' : '$' + (c / 100).toFixed(2);
 const LIVE = SITE.launched; // false = pre-launch: "Coming Soon" everywhere, no cart / checkout
 const SOON = '<span class="soon">Coming Soon</span>';
+const AVAIL = '<span class="soon avail">Available now</span>';
+const isAvail = p => p.status === 'available';
+const canBuyOnline = p => LIVE && isAvail(p) && p.price != null;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// Square product image for cards: the real photo when we have one, otherwise the illustration.
+const cardImg = p => `<img class="pimg" src="${p.card}" srcset="${p.cardSmall} 480w, ${p.card} 800w" sizes="(max-width: 600px) 92vw, (max-width: 980px) 46vw, 30vw" alt="${esc(p.name)}" loading="lazy" decoding="async" width="800" height="800">`;
+const cover = p => p.card ? cardImg(p) : art(p);
+// Every real photo on the site (product photos), for the Gallery and the photo viewer.
+const ALL_PHOTOS = P.flatMap(p => (p.photos || []).map(ph => ({ ...ph, p })));
+const photoList = key => key === 'all' ? ALL_PHOTOS : ALL_PHOTOS.filter(x => x.p.id === key);
 
 /* ---------- cart (remembered in this browser) ---------- */
 const CART_KEY = 'schmearly-cart-v1';
@@ -27,7 +37,12 @@ function boxArt() { return `<svg viewBox="0 0 300 240" role="img" aria-label="Sc
 const art = p => p.cat === 'bread' ? loaf(p) : p.id === 'box' ? boxArt() : jar(p);
 
 /* ---------- views ---------- */
-function card(p) { const buy = LIVE && p.price != null; return `<article class="pcard"><a class="art" href="#product-${p.id}" style="background:${p.bg}" aria-label="${p.name}">${art(p)}</a><h3><a href="#product-${p.id}">${p.name}</a></h3><p class="small">${p.short}</p>${p.size || p.price != null ? `<div class="meta"><span>${p.size || ''}</span><span>${money(p.price)}</span></div>` : ''}${buy ? `<button class="btn" data-add="${p.id}">Add to cart</button>` : `<div class="soonrow">${SOON}</div>`}</article>` }
+function cardAction(p) {
+  if (canBuyOnline(p)) return `<button class="btn" data-add="${p.id}">Add to cart</button>`;
+  if (isAvail(p)) return `<button class="btn" data-order="${p.id}">Order</button>`;
+  return `<div class="soonrow">${SOON}</div>`;
+}
+function card(p) { return `<article class="pcard"><a class="art${p.card ? ' hasphoto' : ''}" href="#product-${p.id}" style="background:${p.bg}" aria-label="${p.name}">${cover(p)}</a><h3><a href="#product-${p.id}">${p.name}</a></h3><p class="small">${p.short}</p>${p.size || p.price != null ? `<div class="meta"><span>${p.size || ''}</span><span>${money(p.price)}</span></div>` : ''}${cardAction(p)}</article>` }
 
 /* ---------- Our Collection gallery ---------- */
 const COLLECTION = [
@@ -37,20 +52,29 @@ const COLLECTION = [
 let colFilter = 'all';
 function cmedia(p) {
   // Real product photo when one exists; otherwise an honest placeholder: the brand illustration + "Photo coming soon".
-  return p.photo
-    ? `<img src="${p.photo}" alt="${p.name}" loading="lazy" decoding="async" width="800" height="800">`
+  return p.card
+    ? cardImg(p)
     : `<div class="cph" style="background:${p.bg}">${art(p)}<span class="cphnote">Photo coming soon</span></div>`;
 }
-function ccard(p) { return `<article class="ccard"><a class="cmedia" href="#product-${p.id}" tabindex="-1" aria-hidden="true">${cmedia(p)}${SOON}</a>
-<div class="cbody"><h4><a href="#product-${p.id}">${p.name}</a></h4><span class="sr-only">Coming soon.</span><p>${p.short}</p>${p.price != null ? `<p class="cmeta"><span>${p.size}</span><span>${money(p.price)}</span></p>` : ''}</div></article>` }
+function ccard(p) { const a = isAvail(p); return `<article class="ccard"><a class="cmedia" href="#product-${p.id}" tabindex="-1" aria-hidden="true">${cmedia(p)}${a ? AVAIL : SOON}</a>
+<div class="cbody"><h4><a href="#product-${p.id}">${p.name}</a></h4><span class="sr-only">${a ? 'Available now.' : 'Coming soon.'}</span><p>${p.short}</p>${p.price != null ? `<p class="cmeta"><span>${p.size}</span><span>${money(p.price)}</span></p>` : ''}${a ? (canBuyOnline(p) ? `<button class="btn" data-add="${p.id}">Add to cart</button>` : `<button class="btn" data-order="${p.id}">Order</button>`) : ''}</div></article>` }
 function collection() { return `<section class="collection" id="collection" aria-labelledby="col-h"><div class="wrap">
 <div class="cintro"><div class="ctext"><p class="eyebrow">Our Collection</p><h2 id="col-h">Something Good Is Rising.</h2>
 <p class="clead">Naturally leavened artisan bread. Thoughtfully crafted gourmet spreads. Made to be enjoyed together.</p>
-<p class="cline">Coming Soon.</p><a class="btn ghost" href="#news">Notify me at launch</a></div>
+${P.some(isAvail) ? `<p class="cnow"><b>Now baking:</b> ${P.filter(isAvail).map(p => `<a href="#product-${p.id}">${p.name}</a>`).join(' &amp; ')}</p>` : ''}
+<p class="cline">${P.some(isAvail) ? 'More coming soon.' : 'Coming Soon.'}</p><a class="btn ghost" href="#news">Get launch updates</a></div>
 <figure class="cfeature"><picture><source type="image/webp" srcset="/img/schmearly-dark-rye-720.webp 720w, /img/schmearly-dark-rye-1200.webp 1199w" sizes="(max-width: 900px) 100vw, 46vw"><img src="/img/schmearly-dark-rye-720.webp" alt="SCHMEARLY: Artisan Bread &amp; Spreads. A dark rye sourdough loaf with a crackled, flour-dusted crust on a linen towel." width="1199" height="1312" loading="lazy" decoding="async"></picture></figure></div>
 <div class="ctabs" role="group" aria-label="Show products">${[['all', 'All Collection'], ['bread', 'Bread'], ['spreads', 'Spreads']].map(([k, l]) => `<button type="button" class="chip${colFilter === k ? ' on' : ''}" data-col="${k}" aria-pressed="${colFilter === k}">${l}</button>`).join('')}</div>
 ${COLLECTION.map(g => `<div class="cgroup" data-group="${g.key}"${colFilter !== 'all' && colFilter !== g.key ? ' hidden' : ''}><div class="ghead"><h3>${g.title}</h3><p>${g.note}</p></div><div class="cgrid">${P.filter(p => p.cat === g.key).map(ccard).join('')}</div></div>`).join('')}
 </div></section>` }
+// Site-wide Gallery: every real photo; each opens full screen and links to its product.
+// Shown once there are at least 2 photos (a one-photo "gallery" would just repeat the Collection image).
+function gallerySection() { if (ALL_PHOTOS.length < 2) return ''; return `<section class="gallerysec" id="gallery" aria-labelledby="gal-h"><div class="wrap"><p class="eyebrow">Gallery</p><h2 id="gal-h">Fresh from our oven.</h2>
+<div class="ggrid">${ALL_PHOTOS.map((ph, i) => `<figure class="gitem"><button type="button" class="gopen" data-lb="all" data-i="${i}" aria-label="View photo: ${esc(ph.alt)}"><img src="${ph.small || ph.src}" alt="${esc(ph.alt)}" width="${ph.w}" height="${ph.h}" loading="lazy" decoding="async"></button><figcaption><a href="#product-${ph.p.id}">${ph.p.name}</a></figcaption></figure>`).join('')}</div></div></section>` }
+// Product-page gallery: main photo (click = full screen) + thumbnails when there are several.
+function pgallery(p) { const ph = p.photos || []; if (!ph.length) return `<div class="gallery" style="background:${p.bg}">${art(p)}</div>`;
+  return `<div class="gallery photos"><button type="button" class="gmain" data-lb="${p.id}" data-i="0" aria-label="View photo full screen"><img id="gmainImg" src="${ph[0].small || ph[0].src}" srcset="${ph[0].small ? `${ph[0].small} 720w, ` : ''}${ph[0].src} ${ph[0].w}w" sizes="(max-width: 800px) 100vw, 50vw" alt="${esc(ph[0].alt)}" width="${ph[0].w}" height="${ph[0].h}" decoding="async"></button>
+${ph.length > 1 ? `<div class="gthumbs">${ph.map((x, i) => `<button type="button" data-lb="${p.id}" data-i="${i}" aria-label="Photo ${i + 1}"><img src="${x.small || x.src}" alt="" loading="lazy"></button>`).join('')}</div>` : ''}</div>` }
 function setCollection(k) { colFilter = k; $$('[data-col]').forEach(b => { const on = b.dataset.col === k; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on) }); $$('.cgroup').forEach(g => { g.hidden = k !== 'all' && g.dataset.group !== k }) }
 
 function home() { return `<div class="view">
@@ -63,6 +87,7 @@ function home() { return `<div class="view">
 <div class="ticker" aria-hidden="true"><div>${'Dark rye · Red whole wheat · White whole wheat · Olive &amp; rosemary · Spinach &amp; walnut · Eggplant &amp; walnut · Green bean &amp; walnut · <b>Better together</b> · '.repeat(6)}</div></div>
 </section>
 ${collection()}
+${gallerySection()}
 <section class="pair"><div class="wrap"><p class="eyebrow">The Perfect Pair</p><h2>Better together.</h2>
 <div class="grid">
 <div class="card"><div class="art">${loaf()}</div><h3>The bread</h3><p>Sourdough on natural starter, no commercial yeast. Dense, a little sour, built to carry a thick layer.</p><a class="btn ghost" href="#shop-bread">See the loaves</a></div>
@@ -99,11 +124,12 @@ function shop(cat) { const list = P.filter(p => cat === 'all' || p.cat === cat);
 <div class="cards">${list.map(card).join('')}</div></div>` }
 
 function pdp(p) { return `<div class="view wrap"><div class="pdp">
-<div class="gallery" style="background:${p.bg}">${art(p)}</div>
+${pgallery(p)}
 <div class="info"><p class="eyebrow"><a href="#shop-${p.cat}">${CATS[p.cat]}</a></p><h1>${p.name}</h1><p style="font-size:21px;font-weight:500">${p.short}</p>
 ${p.price != null ? `<div class="price">${money(p.price)}</div>` : ''}
-${LIVE && p.price != null ? `<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><div class="qty"><button data-pq="-1" aria-label="Decrease quantity">−</button><span id="pq">1</span><button data-pq="1" aria-label="Increase quantity">+</button></div><button class="btn" style="flex:1 1 200px" data-add="${p.id}" data-usepq="1">Add to cart</button></div>`
-  : `<div class="prelaunch">${SOON}<a class="btn ghost" href="#news">Notify me at launch</a></div>`}
+${canBuyOnline(p) ? `<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><div class="qty"><button data-pq="-1" aria-label="Decrease quantity">−</button><span id="pq">1</span><button data-pq="1" aria-label="Increase quantity">+</button></div><button class="btn" style="flex:1 1 200px" data-add="${p.id}" data-usepq="1">Add to cart</button></div>`
+  : isAvail(p) ? `<div class="prelaunch">${AVAIL}<button class="btn" data-order="${p.id}" style="flex:1 1 220px">Order</button></div><p class="small">We take orders by WhatsApp, text or phone.</p>`
+  : `<div class="prelaunch">${SOON}<a class="btn ghost" href="#news">Notify me when it's ready</a></div>`}
 <dl>${p.size ? `<div><dt>Size</dt><dd>${p.size}</dd></div>` : ''}<div><dt>Ingredients</dt><dd>${ph(p.ingredients)}</dd></div><div><dt>Allergens</dt><dd>${ph(p.allergens)}</dd></div><div><dt>Kosher</dt><dd>Certified by ${ph(SITE.kosherAgency)}</dd></div><div><dt>Storage</dt><dd>${ph(p.storage)}</dd></div><div><dt>Shelf life</dt><dd>${ph(p.shelfLife)}</dd></div></dl>
 </div></div>
 ${p.cat === 'bread' ? `<a href="#story" class="maker"><img src="founder.jpg" alt="Illustrated portrait of the Schmearly baker" loading="lazy"><span><span class="eyebrow" style="color:var(--pist)">The baker</span><b>Milled, mixed and baked by Uriel Shtern.</b><span>Read our story</span></span></a>` : ''}
@@ -149,7 +175,8 @@ function route() { const h = (location.hash || '#home').slice(1); let html, anch
   else if (h === 'box') html = box();
   else if (h === 'checkout') html = checkout();
   else if (h === 'thanks') html = thanks();
-  else { html = home(); if (['collection', 'craft', 'kosher', 'story', 'news'].includes(h)) anchor = h }
+  else { html = home(); if (['collection', 'gallery', 'craft', 'kosher', 'story', 'news'].includes(h)) anchor = h }
+  $$('dialog[open]').forEach(d => d.close());
   $('#app').innerHTML = html; $('#nav').classList.remove('open'); $('#menuBtn').setAttribute('aria-expanded', 'false');
   $$('#nav a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + h));
   const prod = h.startsWith('product-') && by(h.slice(8));
@@ -183,7 +210,33 @@ async function pay(btn) {
   }
 }
 
+/* ---------- photo viewer (full screen) ---------- */
+const lb = { list: [], i: 0 };
+function lbShow() { const ph = lb.list[lb.i]; $('#lbImg').src = ph.src; $('#lbImg').alt = ph.alt; $('#lbImg').width = ph.w; $('#lbImg').height = ph.h;
+  $('#lbCap').innerHTML = `<a href="#product-${ph.p.id}" data-lbclose="1">${ph.p.name}</a>${lb.list.length > 1 ? ` <span>${lb.i + 1} / ${lb.list.length}</span>` : ''}`;
+  $$('#lb .lbnav').forEach(b => b.hidden = lb.list.length < 2) }
+function openLB(key, i) { lb.list = photoList(key); if (!lb.list.length) return; lb.i = Math.max(0, Math.min(i, lb.list.length - 1)); lbShow(); $('#lb').showModal() }
+function stepLB(d) { if (lb.list.length < 2) return; lb.i = (lb.i + d + lb.list.length) % lb.list.length; lbShow() }
+
+/* ---------- Order dialog (orders by WhatsApp / text / phone while online payment is off) ---------- */
+function openOrder(id) { const p = by(id), c = SITE.contact;
+  const msg = p ? `Hi! I'd like to order ${p.name} (${p.size}${p.price != null ? ', ' + money(p.price) : ''}).` : `Hi! I'd like to place an order with Schmearly.`;
+  const m = encodeURIComponent(msg);
+  const list = p ? '' : `<ul class="olist">${P.filter(isAvail).map(x => `<li><span>${x.name}</span><b>${money(x.price)}</b></li>`).join('')}</ul>`;
+  $('#orderBody').innerHTML = `<p class="eyebrow">Order</p><h3 id="odTitle">${p ? p.name : 'Order fresh bread'}</h3>
+${p ? `<p class="small">${p.size} · ${money(p.price)}</p>` : list}
+<p>Send us a message and we'll confirm availability, pickup or delivery, and payment.</p>
+<div class="oactions">${c.whatsapp ? `<a class="btn" href="https://wa.me/${c.whatsapp}?text=${m}" target="_blank" rel="noopener">WhatsApp</a>` : ''}${c.phone ? `<a class="btn ghost" href="sms:${c.phone}?&body=${m}">Text us</a><a class="btn ghost" href="tel:${c.phone}">Call ${c.phoneLabel || c.phone}</a>` : ''}${c.email ? `<a class="btn ghost" href="mailto:${c.email}?subject=${encodeURIComponent('Schmearly order')}&body=${m}">Email</a>` : ''}</div>
+${!c.whatsapp && !c.phone && !c.email ? '<p class="ph">[CONTACT DETAILS TO ADD]</p>' : ''}`;
+  $('#orderDlg').showModal() }
+
 document.addEventListener('click', e => { const t = e.target.closest('button,a'); if (!t) return;
+  if (t.dataset.lbclose) { $('#lb').close(); if (t.tagName === 'BUTTON') return }
+  if (t.dataset.lbstep) return stepLB(+t.dataset.lbstep);
+  if (t.dataset.lb) return openLB(t.dataset.lb, +t.dataset.i || 0);
+  if (t.dataset.order) return openOrder(t.dataset.order);
+  if (t.dataset.oclose) return $('#orderDlg').close();
+  if (t.closest('#orderDlg .oactions')) { setTimeout(() => $('#orderDlg').close(), 300); return }
   if (t.id === 'cartBtn') return openCart(true);
   if (t.id === 'cartClose') return openCart(false);
   if (t.id === 'toCo') return openCart(false);
@@ -200,7 +253,11 @@ document.addEventListener('click', e => { const t = e.target.closest('button,a')
   if (t.id === 'zipBtn') { const z = $('#zip').value.trim(); zipMsg = /^\d{5}$/.test(z) ? `<div class="msg">We ship within the US. Chilled delivery to ${z}: <span class="ph">[DELIVERY ZONES TO CONFIRM]</span>. Final shipping options appear on the payment page.</div>` : `<div class="msg">Enter a 5 digit ZIP code.</div>`; $('#zipOut').innerHTML = zipMsg; return }
 });
 $('#scrim').addEventListener('click', () => openCart(false));
-document.addEventListener('keydown', e => { if (e.key === 'Escape') openCart(false) });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') openCart(false); if ($('#lb').open && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) stepLB(e.key === 'ArrowRight' ? 1 : -1) });
+// Click on the dark backdrop closes a dialog.
+$$('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close() }));
+// Swipe left / right in the photo viewer on phones.
+{ let x0 = null; const d = $('#lb'); d.addEventListener('touchstart', e => { x0 = e.touches[0].clientX }, { passive: true }); d.addEventListener('touchend', e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 50) stepLB(dx < 0 ? 1 : -1); x0 = null }) }
 document.addEventListener('submit', e => { e.preventDefault();
   if (e.target.id === 'newsForm') { $('#newsMsg').textContent = 'Thanks! Our newsletter is launching soon. [SIGN-UP SERVICE TO CONNECT]'; e.target.reset() } });
 window.addEventListener('hashchange', route);
@@ -213,6 +270,6 @@ if (qs.get('order') === 'success') {
   history.replaceState(null, '', location.pathname + '#thanks');
 }
 $('#cart').inert = true;
-if (!LIVE) $('#cartBtn').outerHTML = '<a class="btn cartbtn" href="#news">Notify me</a>';
+if (!LIVE) $('#cartBtn').outerHTML = P.some(isAvail) ? '<button class="btn cartbtn" data-order="any">Order</button>' : '<a class="btn cartbtn" href="#news">Notify me</a>';
 $('#year').textContent = new Date().getFullYear();
 drawCart(); route();

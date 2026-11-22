@@ -38,7 +38,7 @@ export async function handleCheckout(request, env) {
   for (const it of items) {
     const p = PRODUCTS.find(x => x.id === it?.id);
     const qty = Number.parseInt(it?.qty, 10);
-    if (!p || !Number.isInteger(p.price) || !Number.isInteger(qty) || qty < 1 || qty > SITE.maxQtyPerItem) {
+    if (!p || p.status !== 'available' || !Number.isInteger(p.price) || !Number.isInteger(qty) || qty < 1 || qty > SITE.maxQtyPerItem) {
       return json({ error: 'Your cart has an item we could not recognize. Please refresh and try again.' }, 400);
     }
     lines.push({ p, qty });
