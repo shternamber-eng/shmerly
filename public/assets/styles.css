@@ -190,6 +190,8 @@ footer.site .flinks a{text-decoration:none;border-bottom:2px solid transparent}
 footer.site .flinks a:hover{border-color:var(--tom)}
 .cart .items .line .qty{border-width:2px}
 .co fieldset p{margin:0}
+.kmark{flex-direction:column;gap:2px;border-style:solid;border-width:2.5px;text-transform:uppercase}
+.kmark b{font-family:'Anton',sans-serif;font-size:22px;font-weight:400;letter-spacing:.02em}
 .fopts{display:flex;flex-direction:column;gap:10px}
 .fopt{flex:none;flex-direction:row;font-size:16px;font-weight:400;letter-spacing:normal;text-transform:none;display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border:2px solid var(--green);border-radius:12px;cursor:pointer;line-height:1.4}
 .fopt input{width:20px;height:20px;margin-top:2px;flex:none;accent-color:var(--green)}

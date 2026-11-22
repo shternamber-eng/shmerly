@@ -112,7 +112,13 @@ export const SITE = {
   // products with status 'available' show an Order button that contacts us instead.
   // Set to true once Stripe is connected.
   launched: false,
-  kosherAgency: '[CERTIFYING AGENCY]',
+  // Same certificate as Rivka Cakes (same kitchen). Valid through Dec 31, 2026: replace the PDF when renewed.
+  kosher: {
+    agency: 'Community Kashrus of Greater Philadelphia (Keystone-K)',
+    short: 'Keystone-K',
+    status: 'Kosher Parve & Pas Yisroel',
+    certificate: '/certificates/keystone-k-kosher-certificate.pdf',
+  },
   // How customers order while online payment is off (Order button + footer).
   contact: { phone: '+19296661482', phoneLabel: '(929) 666-1482', whatsapp: '19296661482', email: '' },
   maxQtyPerItem: 20,
