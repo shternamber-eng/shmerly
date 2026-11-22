@@ -116,6 +116,20 @@ export const SITE = {
   // How customers order while online payment is off (Order button + footer).
   contact: { phone: '+19296661482', phoneLabel: '(929) 666-1482', whatsapp: '19296661482', email: '' },
   maxQtyPerItem: 20,
+  // Pickup (free) or shipping by mail. Only bread is mailed; spreads are pickup only (perishable).
+  pickup: { label: 'Pickup in Philadelphia', address: 'CBS Synagogue, 198 Tomlinson Rd, Philadelphia, PA 19116' },
+  mail: {
+    label: 'Ship by mail',
+    firstLoaf: 1400,      // cents: $14.00 for the first loaf
+    additionalLoaf: 600,  // cents: +$6.00 for each additional loaf
+    area: 'the lower 48 states',
+    note: 'USPS Priority Mail, 1–3 days. We ship Monday to Wednesday so bread never sits over a weekend. No shipping to Alaska, Hawaii, US territories or APO/FPO addresses.',
+  },
 };
 
 export const byId = id => PRODUCTS.find(p => p.id === id);
+
+// Only bread can go by mail.
+export const canMail = items => items.length > 0 && items.every(({ id }) => byId(id)?.cat === 'bread');
+// Shipping in cents for a number of loaves: $14 + $6 for each additional loaf.
+export const mailFee = loaves => loaves > 0 ? SITE.mail.firstLoaf + SITE.mail.additionalLoaf * (loaves - 1) : 0;

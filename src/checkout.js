@@ -7,7 +7,7 @@
 //
 // Prices are always taken from the catalog on the server, never from the browser.
 
-import { PRODUCTS, CURRENCY, SITE } from '../public/assets/catalog.js';
+import { PRODUCTS, CURRENCY, SITE, canMail, mailFee } from '../public/assets/catalog.js';
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
@@ -45,14 +45,32 @@ export async function handleCheckout(request, env) {
   }
   if (!lines.length) return json({ error: 'Your cart is empty.' }, 400);
 
+  const fulfillment = body?.fulfillment === 'mail' ? 'mail' : body?.fulfillment === 'pickup' ? 'pickup' : null;
+  if (!fulfillment) return json({ error: 'Please choose pickup or shipping by mail.' }, 400);
+  if (fulfillment === 'mail' && !canMail(lines.map(({ p }) => p))) {
+    return json({ error: 'Only bread can be shipped by mail. Spreads are pickup only.' }, 400);
+  }
+
   const origin = new URL(request.url).origin;
   const f = new URLSearchParams();
   f.set('mode', 'payment');
   f.set('success_url', `${origin}/?order=success&session_id={CHECKOUT_SESSION_ID}#thanks`);
   f.set('cancel_url', `${origin}/#checkout`);
-  f.set('shipping_address_collection[allowed_countries][0]', 'US');
   f.set('phone_number_collection[enabled]', 'true');
   f.set('billing_address_collection', 'auto');
+  f.set('metadata[fulfillment]', fulfillment);
+  if (fulfillment === 'mail') {
+    // Stripe can only limit by country; the lower-48 rule is stated on the payment page.
+    const loaves = lines.reduce((n, { qty }) => n + qty, 0);
+    f.set('shipping_address_collection[allowed_countries][0]', 'US');
+    f.set('shipping_options[0][shipping_rate_data][type]', 'fixed_amount');
+    f.set('shipping_options[0][shipping_rate_data][display_name]', `USPS Priority Mail (${loaves} loaf${loaves > 1 ? 'ves' : ''})`);
+    f.set('shipping_options[0][shipping_rate_data][fixed_amount][amount]', String(mailFee(loaves)));
+    f.set('shipping_options[0][shipping_rate_data][fixed_amount][currency]', CURRENCY);
+    f.set('custom_text[shipping_address][message]', `We ship to ${SITE.mail.area} only (no Alaska, Hawaii, US territories or APO/FPO). Orders ship Monday to Wednesday.`);
+  } else {
+    f.set('custom_text[submit][message]', `Pickup at ${SITE.pickup.address}. We'll contact you to set a pickup time.`);
+  }
   lines.forEach(({ p, qty }, i) => {
     f.set(`line_items[${i}][quantity]`, String(qty));
     f.set(`line_items[${i}][price_data][currency]`, CURRENCY);

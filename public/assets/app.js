@@ -1,4 +1,4 @@
-import { PRODUCTS as P, SITE, byId as by } from './catalog.js';
+import { PRODUCTS as P, SITE, byId as by, canMail, mailFee } from './catalog.js';
 
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 // "[SOMETHING]" in catalog text → visible dashed placeholder until the owner fills it in.
@@ -152,21 +152,28 @@ function box() { if (!LIVE) return prelaunchView('Build your box', 'Your box, yo
 ${nb > 1 ? `<p class="small" style="margin:-18px 0 24px">${nb} loaves in this box.</p>` : ''}
 <h3>2. Three spreads <span class="small" style="font-family:Archivo,sans-serif;text-transform:none">${n} of 3 picked</span></h3><div class="picks">${sp.map(p => `<div class="pick">${jar(p)}<div><b>${p.name}</b><div class="small">8 oz · ${money(p.price)}</div></div><div class="qty"><button data-bs="${p.id}" data-d="-1" aria-label="Remove ${p.word}">−</button><span>${bx.spreads[p.id]}</span><button data-bs="${p.id}" data-d="1" aria-label="Add ${p.word}">+</button></div></div>`).join('')}</div>
 </div>
-<div class="summary"><h3>In your box</h3><div class="slots">${slots}</div><div class="tot"><span>Total</span><span>${money(total)}</span></div><p class="small" style="color:var(--pist)">Spreads ship chilled. Shipping is calculated at checkout.</p><button class="btn light" id="boxAdd" ${n === 3 ? '' : 'disabled'}>${n === 3 ? 'Add box to cart' : 'Pick ' + (3 - n) + ' more'}</button></div></div></div>` }
+<div class="summary"><h3>In your box</h3><div class="slots">${slots}</div><div class="tot"><span>Total</span><span>${money(total)}</span></div><p class="small" style="color:var(--pist)">Boxes with spreads are pickup only in Philadelphia.</p><button class="btn light" id="boxAdd" ${n === 3 ? '' : 'disabled'}>${n === 3 ? 'Add box to cart' : 'Pick ' + (3 - n) + ' more'}</button></div></div></div>` }
 
-let zipMsg = '';
+let ful = 'pickup'; // 'pickup' | 'mail'
+const cartItems = () => Object.keys(cart).map(id => ({ id }));
+const cartLoaves = () => Object.keys(cart).reduce((n, i) => n + (by(i).cat === 'bread' ? cart[i] : 0), 0);
 function orderLines() { return Object.keys(cart).map(i => { const p = by(i); return `<div class="line">${art(p)}<div><b>${p.name}</b><div class="small">${money(p.price)} · ${p.size}</div></div><div class="qty"><button data-cq="${i}" data-d="-1" aria-label="Decrease ${p.name}">−</button><span>${cart[i]}</span><button data-cq="${i}" data-d="1" aria-label="Increase ${p.name}">+</button></div></div>` }).join('') }
 function checkout() { if (!LIVE) return prelaunchView('Checkout', 'Almost ready.');
   if (!cartCount()) return `<div class="view wrap" style="padding:80px 0;min-height:60vh"><h2>Your cart is empty.</h2><p style="margin:16px 0 24px">Start with a jar or build a box.</p><a class="btn" href="#shop-all">Go to shop</a></div>`;
+  const mailOk = canMail(cartItems()); if (!mailOk) ful = 'pickup';
+  const ship = ful === 'mail' ? mailFee(cartLoaves()) : 0, M = SITE.mail;
   return `<div class="view wrap" style="padding-top:40px"><p class="eyebrow">Checkout</p><h2>Almost yours.</h2>
 <div class="co" style="margin-top:32px"><div>
 <fieldset><legend>Your order</legend><div>${orderLines()}</div></fieldset>
-<fieldset><legend>Delivery</legend><p>Bread ships standard. Spreads ship chilled, so delivery options depend on where you are.</p><div class="formrow" style="margin:0"><label>ZIP code<input id="zip" inputmode="numeric" maxlength="5" placeholder="10001"></label><button type="button" class="btn ghost" id="zipBtn" style="align-self:flex-end">Check delivery</button></div><div id="zipOut">${zipMsg}</div></fieldset>
+<fieldset><legend>Pickup or shipping</legend><div class="fopts">
+<label class="fopt"><input type="radio" name="ful" value="pickup" ${ful === 'pickup' ? 'checked' : ''}><span><b>${SITE.pickup.label}</b> · Free<br><span class="small">${SITE.pickup.address}. We'll contact you to set a pickup time.</span></span></label>
+<label class="fopt${mailOk ? '' : ' off'}"><input type="radio" name="ful" value="mail" ${ful === 'mail' ? 'checked' : ''} ${mailOk ? '' : 'disabled'}><span><b>${M.label}</b> · ${money(M.firstLoaf)} first loaf, +${money(M.additionalLoaf)} each additional<br><span class="small">${mailOk ? `Ships to ${M.area}. ${M.note}` : 'Spreads are pickup only, so this order can\'t be mailed. Only bread ships.'}</span></span></label>
+</div></fieldset>
 </div>
 <div class="summary" style="background:#FBF5EA;color:var(--green);border:2.5px solid var(--green)"><h3>Summary</h3>${Object.keys(cart).map(i => `<div style="display:flex;justify-content:space-between;gap:12px"><span>${cart[i]} × ${by(i).name}</span><b>${money(by(i).price * cart[i])}</b></div>`).join('')}
-<div style="display:flex;justify-content:space-between"><span>Delivery</span><span class="small">Calculated at payment</span></div><div class="tot"><span>Subtotal</span><span>${money(cartSub())}</span></div><button class="btn" id="payBtn">Pay securely</button><p class="small" id="coMsg">You will enter your email, address and card (or Apple Pay / Google Pay) on the secure Stripe page.</p></div></div></div>` }
+<div style="display:flex;justify-content:space-between;gap:12px"><span>${ful === 'mail' ? 'Shipping' : 'Pickup'}</span><b>${ship ? money(ship) : 'Free'}</b></div><div class="tot"><span>Total</span><span>${money(cartSub() + ship)}</span></div><button class="btn" id="payBtn">Pay securely</button><p class="small" id="coMsg">You will enter your email${ful === 'mail' ? ', shipping address' : ''} and card (or Apple Pay / Google Pay) on the secure Stripe page.</p></div></div></div>` }
 
-function thanks() { return `<div class="view wrap" style="padding:80px 0;min-height:60vh"><p class="eyebrow">Order received</p><h2>Thank you. It's schmear time.</h2><p style="margin:16px 0 24px;font-size:20px;max-width:560px">Your payment went through. A receipt is on its way to your email, and we'll be in touch about delivery.</p><a class="btn" href="#home">Back to the shop</a></div>` }
+function thanks() { return `<div class="view wrap" style="padding:80px 0;min-height:60vh"><p class="eyebrow">Order received</p><h2>Thank you. It's schmear time.</h2><p style="margin:16px 0 24px;font-size:20px;max-width:560px">Your payment went through. A receipt is on its way to your email, and we'll be in touch about pickup or shipping.</p><a class="btn" href="#home">Back to the shop</a></div>` }
 
 /* ---------- router ---------- */
 function route() { const h = (location.hash || '#home').slice(1); let html, anchor;
@@ -193,13 +200,13 @@ function drawCart() { if (!LIVE) return; const ids = Object.keys(cart), n = cart
   let up = ''; if (n && !hasBread) up = `<div class="upsell"><span><b>No bread yet?</b><br><span class="small">${by('rye').name}, ${money(by('rye').price)}</span></span><button class="btn" data-add="rye" style="min-height:44px;padding:8px 16px">Add</button></div>`;
   else if (n && !hasSpread) up = `<div class="upsell"><span><b>This loaf wants a schmear.</b><br><span class="small">Spinach &amp; Walnut, ${money(by('spinach').price)}</span></span><button class="btn" data-add="spinach" style="min-height:44px;padding:8px 16px">Add</button></div>`;
   $('#cartItems').innerHTML = n ? orderLines() + up : '<p style="padding:28px 0">Nothing here yet. Bread is lonely without a schmear.</p>';
-  $('#cartFt').innerHTML = n ? `<div class="tot"><span>Subtotal</span><span>${money(cartSub())}</span></div><p class="small">Shipping is calculated at checkout.</p><a class="btn" href="#checkout" id="toCo">Checkout</a>` : `<a class="btn" href="#shop-all" id="toCo">Go to shop</a>` }
+  $('#cartFt').innerHTML = n ? `<div class="tot"><span>Subtotal</span><span>${money(cartSub())}</span></div><p class="small">Free pickup in Philadelphia, or bread by mail from ${money(SITE.mail.firstLoaf)}.</p><a class="btn" href="#checkout" id="toCo">Checkout</a>` : `<a class="btn" href="#shop-all" id="toCo">Go to shop</a>` }
 function openCart(o) { $('#cart').classList.toggle('open', o); $('#scrim').classList.toggle('open', o); $('#cart').setAttribute('aria-hidden', String(!o)); $('#cart').inert = !o; if (o) $('#cartClose').focus() }
 
 async function pay(btn) {
   btn.disabled = true; const old = btn.textContent; btn.textContent = 'Opening secure payment…';
   try {
-    const res = await fetch('/api/checkout', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ items: Object.entries(cart).map(([id, qty]) => ({ id, qty })) }) });
+    const res = await fetch('/api/checkout', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ fulfillment: ful, items: Object.entries(cart).map(([id, qty]) => ({ id, qty })) }) });
     const data = await res.json().catch(() => ({}));
     if (res.ok && data.url) { location.href = data.url; return }
     throw new Error(data.error || 'Payment could not be started.');
@@ -250,8 +257,8 @@ document.addEventListener('click', e => { const t = e.target.closest('button,a')
   if (t.dataset.bb) { const d = +t.dataset.d, id = t.dataset.bb; if (d > 0 && sum(bx.breads) >= MAX_BOX_BREADS) return toast(`Up to ${MAX_BOX_BREADS} loaves per box.`); bx.breads[id] = Math.max(0, bx.breads[id] + d); return rerender(box()) }
   if (t.dataset.bs) { const d = +t.dataset.d, id = t.dataset.bs; if (d > 0 && bxCount() >= 3) return toast('Three jars per box. Remove one to swap.'); bx.spreads[id] = Math.max(0, bx.spreads[id] + d); return rerender(box()) }
   if (t.id === 'boxAdd') { for (const g of [bx.breads, bx.spreads]) for (const [i, q] of Object.entries(g)) if (q) add(i, q); bx = emptyBox(); rerender(box()); toast('Your box is in the cart'); return openCart(true) }
-  if (t.id === 'zipBtn') { const z = $('#zip').value.trim(); zipMsg = /^\d{5}$/.test(z) ? `<div class="msg">We ship within the US. Chilled delivery to ${z}: <span class="ph">[DELIVERY ZONES TO CONFIRM]</span>. Final shipping options appear on the payment page.</div>` : `<div class="msg">Enter a 5 digit ZIP code.</div>`; $('#zipOut').innerHTML = zipMsg; return }
 });
+document.addEventListener('change', e => { if (e.target.name === 'ful') { ful = e.target.value; rerender(checkout()) } });
 $('#scrim').addEventListener('click', () => openCart(false));
 document.addEventListener('keydown', e => { if (e.key === 'Escape') openCart(false); if ($('#lb').open && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) stepLB(e.key === 'ArrowRight' ? 1 : -1) });
 // Click on the dark backdrop closes a dialog.
